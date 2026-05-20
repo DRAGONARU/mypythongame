@@ -91,6 +91,104 @@ Sparse set даёт: cache locality, O(1) add/remove.
 **НЕ делать:** inheritance-heavy, virtual update() everywhere.
 **Делать:** data-oriented ECS. ООП/SOLID применяется к системам и модулям, не к каждой entity.
 
+---
+
+## Иерархия сущностей (ECS Archetypes)
+
+В ECS нет наследования. Entity = набор компонентов. Архетип = уникальная комбинация компонентов.
+Ниже — все планируемые архетипы сущностей и их компонентный состав.
+
+### Компоненты (справочник)
+
+| Компонент | Поля | Назначение |
+|-----------|------|------------|
+| Position | x, y | Координаты в мире |
+| Velocity | x, y | Скорость (единиц/тик) |
+| Collider | radius | Круговой коллайдер |
+| Health | current, max | Здоровье |
+| TimeAffected | scale | Локальный timescale (1.0=normal, 0.0=stopped, -1.0=reverse) |
+| TimelineAnchor | timeline_id | К какой timeline принадлежит |
+| Frozen | remaining_ticks | Сколько тиков ещё заморожен |
+| Owner | entity_id | Кто создал (нож → владелец) |
+| Lifetime | remaining_ticks | До самоуничтожения |
+| Knife | knife_type, damage, speed | Тип ножа, урон, скорость |
+| Reflective | bounces_remaining | Сколько рикошетов осталось |
+| Delayed | activate_tick | На каком тике активироваться |
+| Piercing | pierces_remaining | Сколько врагов может пробить |
+| Orbiting | center_entity, angle, angular_speed | Вокруг чего вращается |
+| TimeAnchored | (пустой маркер) | Игнорирует global time stop |
+| Recursive | trajectory: list[Position] | Помнит траекторию, не откатывается при rewind |
+| Player | (пустой маркер) | Маркер игрока |
+| Enemy | enemy_type, ai_state | Тип врага, состояние ИИ |
+| Boss | phase | Фаза босса |
+| SpellCard | spell_type, remaining_ticks, cooldown | Тип спелла, оставшееся время, кд |
+| TimeBubble | center_x, center_y, radius, scale, falloff | Параметры временного пузыря |
+| Projectile | damage, owner_id | Универсальный проджектайл (вражеский) |
+| Sprite | texture_id, layer | Что рисовать, слой отрисовки |
+| Animation | current_frame, frame_timer | Текущий кадр анимации |
+
+### Архетипы (сущности игры)
+
+#### Игрок
+
+| Сущность | Компоненты |
+|----------|------------|
+| Сакуя (player) | Position, Velocity, Collider, Health, TimeAffected, TimelineAnchor, Player, Sprite, Animation |
+
+#### Ножи
+
+| Сущность | Компоненты |
+|----------|------------|
+| Normal Knife | Position, Velocity, Collider, Knife(normal), Lifetime, Owner, TimeAffected, TimelineAnchor, Sprite |
+| Delayed Knife | Position, Collider, Knife(delayed), Delayed, Owner, TimeAffected, TimelineAnchor, Sprite |
+| Reflective Knife | Position, Velocity, Collider, Knife(reflective), Reflective, Lifetime, Owner, TimeAffected, TimelineAnchor, Sprite |
+| Orbiting Knife | Position, Knife(orbiting), Orbiting, Collider, Owner, TimeAffected, TimelineAnchor, Sprite |
+| Piercing Knife | Position, Velocity, Collider, Knife(piercing), Piercing, Lifetime, Owner, TimeAffected, TimelineAnchor, Sprite |
+| TimeAnchored Knife | Position, Velocity, Collider, Knife(time_anchored), TimeAnchored, Lifetime, Owner, Sprite |
+| Recursive Knife | Position, Velocity, Collider, Knife(recursive), Recursive, Lifetime, Owner, TimelineAnchor, Sprite |
+
+#### Враги
+
+| Сущность | Компоненты |
+|----------|------------|
+| Враг (базовый) | Position, Velocity, Collider, Health, Enemy, TimeAffected, TimelineAnchor, Sprite, Animation |
+| Boss | Position, Velocity, Collider, Health, Enemy, Boss, TimeAffected, TimelineAnchor, Sprite, Animation |
+
+#### Spell Cards & Time Effects
+
+| Сущность | Компоненты |
+|----------|------------|
+| Spell Card | Position, SpellCard, TimeAffected, TimelineAnchor, Sprite |
+| Time Bubble | Position, TimeBubble, Lifetime, TimeAffected, TimelineAnchor, Sprite |
+
+#### Прочее
+
+| Сущность | Компоненты |
+|----------|------------|
+| Вражеский проджектайл | Position, Velocity, Collider, Projectile, Lifetime, TimeAffected, TimelineAnchor, Sprite |
+| Pickup (здоровье/буст) | Position, Collider, Lifetime, Sprite |
+
+### Сводка: какие компоненты у каких сущностей
+
+```
+                     Pos  Vel  Col  HP  Time  TL  Knife  Enemy  Player  Sprite  ...
+Сакуя                 +    +    +   +    +    +    -      -      +      +
+Normal Knife          +    +    +   -    +    +    +      -      -      +
+Delayed Knife         +    -    +   -    +    +    +      -      -      +
+Reflective Knife      +    +    +   -    +    +    +      -      -      +
+Orbiting Knife        +    -    +   -    +    +    +      -      -      +
+Piercing Knife        +    +    +   -    +    +    +      -      -      +
+TimeAnchored Knife    +    +    +   -    -    -    +      -      -      +
+Recursive Knife       +    +    +   -    +    +    +      -      -      +
+Enemy                 +    +    +   +    +    +    -      +      -      +
+Boss                  +    +    +   +    +    +    -      +      -      +
+Enemy Projectile      +    +    +   -    +    +    -      -      -      +
+Time Bubble           +    -    -   -    +    +    -      -      -      +
+Pickup                +    -    +   -    -    -    -      -      -      +
+```
+
+**Примечание:** TimeAnchored Knife — единственная сущность без TimeAffected и TimelineAnchor (игнорирует глобальное время).
+
 ### Generation Handles
 Обязательны для rewind — иначе сломаются ссылки.
 
@@ -159,6 +257,21 @@ cell → entities. Ускоряет: collision, AoE, time fields, knife lookup.
 **Решение:** data-oriented ECS + sparse set + spatial hash + fixed tick + event sourcing + ring buffer snapshots.
 
 **Самая интересная часть:** selective temporal consistency — какие объекты подчиняются времени, какие существуют вне времени, какие «помнят» прошлые timelines. Это механика уровня Braid + Touhou + simulation sandbox.
+
+---
+
+## Правила работы с PROGRESS.md
+
+- **PROGRESS.md** — живой документ, отражающий реальное состояние проекта на момент последней проверки
+- **Обновляется** по запросу пользователя: я сканирую проект, сверяю файлы с планом и обновляю статусы
+- **Статусы:** ✅ Готов | ⚠️ Частично | ❌ Не начат | ❓ Неясно
+- **Секции:**
+  - Инфраструктура — сборка, структура, конфиги
+  - Фазы 1–4 — реализация по плану (каждая фаза зависит от предыдущей)
+  - Проблемы — что сломано или требует внимания
+  - Следующие шаги — приоритизированный список того, что делать дальше
+- **Фазы привязаны к архитектуре из PLAN:** Фаза 1 = фундамент (ECS, loop, spatial hash), Фаза 2 = время (events, snapshots, rewind, time domains), Фаза 3 = геймплей (ножи, спеллы, враги, игрок), Фаза 4 = продвинутые механики (timeline fracture и др.)
+- **Правило:** ни один статус не ставится ✅ без реального кода в проекте
 
 ---
 
