@@ -1,6 +1,6 @@
 # PROGRESS — Прогресс проекта
 
-## Последняя проверка: 2026-05-20
+## Последняя проверка: 2026-06-02
 
 ---
 
@@ -24,12 +24,13 @@
 
 | Компонент | Статус | Примечание |
 |-----------|--------|------------|
-| `Entity` (id + generation) | ✅ Готов | frozen dataclass, slots, auto hash/eq |
-| `SparseSet[T]` | ✅ Готов | Generic[T], insert/remove/get/contains/len/iter/iter_with_entities |
-| `World` (контейнер entities + components) | ❌ Не начат | Следующий шаг |
+| `Entity` (id + generation) | ✅ Готов | frozen dataclass, slots, auto hash/eq, docstrings |
+| `SparseSet[T]` | ✅ Готов | Generic[T], insert/remove/get/contains/len/iter/iter_with_entities, docstrings |
+| `World` | ✅ Готов | create/destroy entity, add/get/remove component, query, _is_alive guard, docstrings |
+| `Query` | ✅ Готов | lazy iterator, smallest-set optimisation, Entity в yield, type_to_index, guard на дубликаты, __repr__, docstrings |
 | `System` (базовый класс) | ❌ Не начат | |
-| `Query` (итерация по компонентам) | ❌ Не начат | |
-| Тесты на ECS | ❌ Не начат | |
+| `__init__.py` реэкспорт | ❌ Не начат | Entity, SparseSet, World, Query — публичный API |
+| Тесты на ECS | ❌ Не начат | entity, sparse_set, world, query |
 
 ### 1.2 Fixed Tick Game Loop
 
@@ -55,9 +56,9 @@
 
 | Компонент | Статус |
 |-----------|--------|
-| Event Log | ❌ |
+| Event Log (с Undo) | ❌ |
 | Ring Buffer Snapshots | ❌ |
-| Rewind (полный) | ❌ |
+| Rewind (reverse replay) | ❌ |
 | Selective Rewind + TimelineLayer | ❌ |
 | Time Domains (local_time_scale) | ❌ |
 | Time Bubble | ❌ |
@@ -66,30 +67,32 @@
 
 | Компонент | Статус |
 |-----------|--------|
-| Knife System (7 типов) | ❌ |
-| Spell Cards (event-driven) | ❌ |
+| Knife System (3 типа MVP + 4 доп.) | ❌ |
+| Spell Cards (event-driven, мана) | ❌ |
+| Способности времени (мана времени) | ❌ |
 | Enemy System | ❌ |
 | Collision System | ❌ |
-| Player (Сакуя) | ❌ |
+| Player (Сакуя: HP + Mana + TimeMana + Experience) | ❌ |
 | Ввод / Управление | ❌ |
 | Рендеринг | ❌ |
+| Roguelike прогрессия (опыт, уровни, драфт) | ❌ |
 
 ## Фаза 4 — Продвинутые механики
 
 | Компонент | Статус |
 |-----------|--------|
-| Timeline Fracture | ❌ |
-| Recursive Knife | ❌ |
-| Zobrist Hash / State dedup | ❌ |
-| Roguelike (прогрессия, уровни) | ❌ |
+| Rollback DSU | ❌ |
+| Persistent Snapshots | ❌ |
+| Sweep & Prune | ❌ |
+| Timeline Fracture | ❌ (вне MVP) |
 
 ---
 
 ## Проблемы, требующие внимания
 
-1. **Нет тестов** — нужно написать тесты на Entity и SparseSet параллельно с World
+1. **Нет тестов** — нужно написать тесты на Entity, SparseSet, World, Query
 2. **`game_loop.py` пустой** — после завершения ECS
-3. **Мелкие замечания SparseSet** — `Iterator` из typing (лучше из collections.abc), пробелы в keyword args (PEP 8)
+3. **Docstring-несогласованность в Query** — docstring примеры в World.query и Query показывают `for pos, vel` без Entity, а код теперь выдаёт `(entity, pos, vel)`
 
 ---
 
@@ -98,9 +101,10 @@
 1. ~~Удалить мусор egg-info, переустановить пакет~~ ✅
 2. ~~Добавить `__init__.py` во все пакеты `src/`~~ ✅
 3. ~~Реализовать Entity + SparseSet~~ ✅
-4. **Реализовать `World`** (`src/core/ecs/world.py`) — текущий приоритет
-5. Реализовать `Query` (`src/core/ecs/query.py`)
-6. Реализовать `System` (`src/core/ecs/system.py`)
-7. Обновить `__init__.py` в ecs — реэкспорт публичного API
-8. Написать тесты на весь ECS (entity, sparse_set, world, query)
-9. Реализовать Fixed Tick Game Loop (`src/core/game_loop.py`)
+4. ~~Реализовать `World`~~ ✅
+5. ~~Реализовать `Query`~~ ✅
+6. Исправить docstring-примеры (World.query, Query) — добавить Entity в yield
+7. Реализовать `System` (`src/core/ecs/system.py`)
+8. Обновить `__init__.py` в ecs — реэкспорт публичного API
+9. Написать тесты на весь ECS (entity, sparse_set, world, query)
+10. Реализовать Fixed Tick Game Loop (`src/core/game_loop.py`)

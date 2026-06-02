@@ -1,21 +1,39 @@
 from typing import TypeVar, Generic
-from сollections.abc import Iterator
+from collections.abc import Iterator
 from .entity import Entity
 
 T = TypeVar('T')
 
+
 class SparseSet(Generic[T]):
-    """Sparse set for ECS component storage."""
+    """Sparse set for ECS component storage.
+
+    Provides O(1) insert, get, remove (via swap-with-last trick)
+    and O(N) dense iteration over live values with no holes or None checks.
+
+    Internal layout:
+        _sparse[eid]  -> dense index (-1 if absent)
+        _dense[i]     -> entity id
+        _values[i]    -> component value at the same dense index
+        _generations  -> per-entity generation to detect stale references
+    """
+
     def __init__(self) -> None:
-        self._sparse : list[int] = []
-        self._dense : list[int] = []
-        self._values : list[T] = []
-        self._generations : list[int] = []
+        self._sparse: list[int] = []
+        self._dense: list[int] = []
+        self._values: list[T] = []
+        self._generations: list[int] = []
 
     def insert(self, entity: Entity, value: T) -> bool:
-        """Inserts entity into the set.
-        Returns True if the entity was inserted, False if it already existed."""
+        """Insert or update a component for the given entity.
 
+        If the entity with matching id and generation already exists,
+        its value is overwritten (update). If the id exists but the
+        generation differs, the insert is rejected (stale reference).
+
+        Returns:
+            True on successful insert or update, False if generation mismatch.
+        """
         eid = entity.id
         gen = entity.generation
 
@@ -29,7 +47,7 @@ class SparseSet(Generic[T]):
                 return True
             else:
                 return False
-            
+
         dense_idx = len(self._dense)
         self._sparse[eid] = dense_idx
         self._dense.append(eid)
@@ -38,17 +56,25 @@ class SparseSet(Generic[T]):
         return True
 
     def remove(self, entity: Entity) -> bool:
-        """Removes entity from the set.
-        Returns True if the entity was removed, False if it didn't exist."""
+        """Remove the component for the given entity using swap-with-last.
+
+        The removed slot is replaced by the last element to keep the
+        dense array compact, preserving O(1) removal and hole-free
+        iteration.
+
+        Returns:
+            True if removed, False if the entity was not present or
+            generation mismatch.
+        """
         eid = entity.id
         gen = entity.generation
 
         if eid >= len(self._sparse) or self._sparse[eid] == -1:
             return False
-        
+
         if self._generations[eid] != gen:
             return False
-        
+
         dense_idx = self._sparse[eid]
         last_dense_idx = len(self._dense) - 1
 
@@ -58,7 +84,7 @@ class SparseSet(Generic[T]):
             self._dense[dense_idx] = last_id
             self._values[dense_idx] = self._values[last_dense_idx]
             self._sparse[last_id] = dense_idx
-        
+
         self._sparse[eid] = -1
         self._generations[eid] = -1
 
@@ -66,9 +92,14 @@ class SparseSet(Generic[T]):
         self._values.pop()
 
         return True
-    
+
     def get(self, entity: Entity) -> T | None:
-        """Returns value associated with the entity, or None if it doesn't exist."""
+        """Return the component value for the given entity.
+
+        Returns:
+            The stored value, or None if the entity is absent or
+            generation mismatch.
+        """
         eid = entity.id
         gen = entity.generation
 
@@ -77,32 +108,36 @@ class SparseSet(Generic[T]):
 
         if self._generations[eid] != gen:
             return None
-        
+
         dense_idx = self._sparse[eid]
-        
+
         return self._values[dense_idx]
-    
+
     def contains(self, entity: Entity) -> bool:
-        """Returns True if the entity exists in the set, False otherwise."""
+        """Check whether the entity with matching generation exists in the set."""
         eid = entity.id
         gen = entity.generation
 
         if eid >= len(self._sparse) or self._sparse[eid] == -1:
             return False
-        
+
         return self._generations[eid] == gen
-    
+
     def __len__(self) -> int:
-        """Returns number of entities in the set."""
+        """Return the number of live entities in the set."""
         return len(self._dense)
 
     def __iter__(self) -> Iterator[T]:
-        """Returns iterator over values in the set."""
+        """Iterate over all component values in dense order."""
         for i in range(len(self._dense)):
             yield self._values[i]
 
     def iter_with_entities(self) -> Iterator[tuple[Entity, T]]:
-        """Returns iterator over (entity, value) pairs in the set."""
+        """Iterate over (Entity, value) pairs in dense order.
+
+        Useful when the caller needs to know which entity owns
+        each component, e.g. during Query resolution.
+        """
         for i in range(len(self._dense)):
             eid = self._dense[i]
             gen = self._generations[eid]
