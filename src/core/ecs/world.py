@@ -143,7 +143,7 @@ class World:
         chosen as the driving set to minimise iterations.
 
         Example:
-            for pos, vel in world.query(Position, Velocity):
+            for entity, pos, vel in world.query(Position, Velocity):
                 pos.x += vel.x
         """
         return Query(self, component_types)

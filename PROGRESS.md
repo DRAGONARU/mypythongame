@@ -1,6 +1,6 @@
 # PROGRESS — Прогресс проекта
 
-## Последняя проверка: 2026-06-02
+## Последняя проверка: 2026-06-12
 
 ---
 
@@ -28,9 +28,9 @@
 | `SparseSet[T]` | ✅ Готов | Generic[T], insert/remove/get/contains/len/iter/iter_with_entities, docstrings |
 | `World` | ✅ Готов | create/destroy entity, add/get/remove component, query, _is_alive guard, docstrings |
 | `Query` | ✅ Готов | lazy iterator, smallest-set optimisation, Entity в yield, type_to_index, guard на дубликаты, __repr__, docstrings |
-| `System` (базовый класс) | ❌ Не начат | |
-| `__init__.py` реэкспорт | ❌ Не начат | Entity, SparseSet, World, Query — публичный API |
-| Тесты на ECS | ❌ Не начат | entity, sparse_set, world, query |
+| `System` (базовый класс) | ✅ Готов | ABC, abstractmethod update(world), docstrings |
+| `__init__.py` реэкспорт | ❌ Не начат | Entity, SparseSet, World, Query, System — публичный API |
+| Тесты на ECS | ❌ Не начат | entity, sparse_set, world, query, system |
 
 ### 1.2 Fixed Tick Game Loop
 
@@ -91,8 +91,8 @@
 ## Проблемы, требующие внимания
 
 1. **Нет тестов** — нужно написать тесты на Entity, SparseSet, World, Query
-2. **`game_loop.py` пустой** — после завершения ECS
-3. **Docstring-несогласованность в Query** — docstring примеры в World.query и Query показывают `for pos, vel` без Entity, а код теперь выдаёт `(entity, pos, vel)`
+2. **`game_loop.py` пустой** — следующий приоритет после ECS
+3. **Docstring-несогласованность** — исправлено ✅
 
 ---
 
@@ -103,8 +103,8 @@
 3. ~~Реализовать Entity + SparseSet~~ ✅
 4. ~~Реализовать `World`~~ ✅
 5. ~~Реализовать `Query`~~ ✅
-6. Исправить docstring-примеры (World.query, Query) — добавить Entity в yield
-7. Реализовать `System` (`src/core/ecs/system.py`)
-8. Обновить `__init__.py` в ecs — реэкспорт публичного API
-9. Написать тесты на весь ECS (entity, sparse_set, world, query)
+6. ~~Исправить docstring-примеры~~ ✅
+7. ~~Реализовать `System`~~ ✅
+8. Обновить `__init__.py` в ecs — реэкспорт публичного API (Entity, SparseSet, World, Query, System)
+9. Написать тесты на весь ECS (entity, sparse_set, world, query, system)
 10. Реализовать Fixed Tick Game Loop (`src/core/game_loop.py`)

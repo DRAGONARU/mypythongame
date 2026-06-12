@@ -14,7 +14,7 @@ class Query:
     are checked via O(1) SparseSet.get per candidate entity.
 
     Example:
-        for pos, vel in world.query(Position, Velocity):
+        for entity, pos, vel in world.query(Position, Velocity):
             pos.x += vel.x
     """
 
