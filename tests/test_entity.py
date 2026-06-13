@@ -1,5 +1,5 @@
 import pytest
-from src.core.ecs import Entity
+from src.core.ecs.entity import Entity
 
 
 def test_creation():
