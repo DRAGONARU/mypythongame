@@ -150,35 +150,35 @@ Sparse set даёт: cache locality, O(1) add/remove.
 
 ### Компоненты (справочник)
 
-| Компонент | Поля | Назначение |
-|-----------|------|------------|
-| Position | x, y | Координаты в мире |
-| Velocity | x, y | Скорость (единиц/тик) |
-| Collider | radius | Круговой коллайдер |
-| Health | current, max | Здоровье |
-| Mana | current, max | Мана для spell cards |
-| TimeMana | current, max | Мана для способностей времени |
-| TimeAffected | scale | Локальный timescale (1.0=normal, 0.0=stopped, -1.0=reverse) |
-| TimelineAnchor | timeline_id | К какой timeline принадлежит |
-| Frozen | remaining_ticks | Сколько тиков ещё заморожен |
-| Owner | entity_id | Кто создал (нож → владелец) |
-| Lifetime | remaining_ticks | До самоуничтожения |
-| Knife | knife_type, damage, speed | Тип ножа, урон, скорость |
-| Reflective | bounces_remaining | Сколько рикошетов осталось |
-| Delayed | activate_tick | На каком тике активироваться |
-| Piercing | pierces_remaining | Сколько врагов может пробить |
-| Orbiting | center_entity, angle, angular_speed | Вокруг чего вращается |
-| TimeAnchored | (пустой маркер) | Игнорирует global time stop |
-| Recursive | trajectory: list[Position] | Помнит траекторию, не откатывается при rewind |
-| Player | (пустой маркер) | Маркер игрока |
-| Experience | current, level, to_next | Текущий опыт, уровень, опыт до следующего уровня |
-| Enemy | enemy_type, ai_state | Тип врага, состояние ИИ |
-| Boss | phase | Фаза босса |
-| SpellCard | spell_type, remaining_ticks, cooldown | Тип спелла, оставшееся время, кд |
-| TimeBubble | center_x, center_y, radius, scale, falloff | Параметры временного пузыря |
-| Projectile | damage, owner_id | Универсальный проджектайл (вражеский) |
-| Sprite | texture_id, layer | Что рисовать, слой отрисовки |
-| Animation | current_frame, frame_timer | Текущий кадр анимации |
+| Компонент | Поля | Назначение | Реализован |
+|-----------|------|------------|------------|
+| Position | x, y | Координаты в мире | ✅ |
+| Velocity | x, y | Скорость (единиц/тик) | ✅ |
+| Collider | radius | Круговой коллайдер | ✅ |
+| Health | value, max_value | Здоровье | ✅ |
+| Mana | value, max_value | Мана для spell cards | ✅ |
+| TimeMana | value, max_value | Мана для способностей времени | ✅ |
+| TimeAffected | scale | Локальный timescale (1.0=normal, 0.0=stopped, -1.0=reverse) | ✅ |
+| TimelineAnchor | timeline_id | К какой timeline принадлежит | ❌ |
+| Frozen | remaining_ticks | Сколько тиков ещё заморожен | ❌ |
+| Owner | entity | Кто создал (нож → владелец) | ✅ |
+| Lifetime | remaining_ticks | До самоуничтожения | ✅ |
+| Knife | knife_type, damage, speed | Тип ножа, урон, скорость | ✅ |
+| Reflective | bounces_remaining | Сколько рикошетов осталось | ❌ |
+| Delayed | activate_tick | На каком тике активироваться | ❌ |
+| Piercing | pierces_remaining | Сколько врагов может пробить | ❌ |
+| Orbiting | center_entity, angle, angular_speed | Вокруг чего вращается | ❌ |
+| TimeAnchored | (пустой маркер) | Игнорирует global time stop | ❌ |
+| Recursive | trajectory: list[Position] | Помнит траекторию, не откатывается при rewind | ❌ |
+| Player | (пустой маркер) | Маркер игрока | ❌ |
+| Experience | level, current, to_next | Текущий опыт, уровень, опыт до следующего уровня | ✅ |
+| Enemy | enemy_type, ai_state | Тип врага, состояние ИИ | ❌ |
+| Boss | phase | Фаза босса | ❌ |
+| SpellCard | spell_type, remaining_ticks, cooldown | Тип спелла, оставшееся время, кд | ❌ |
+| TimeBubble | center_x, center_y, radius, scale, falloff | Параметры временного пузыря | ❌ |
+| Projectile | damage, owner_id | Универсальный проджектайл (вражеский) | ❌ |
+| Sprite | texture_id, layer | Что рисовать, слой отрисовки | ❌ |
+| Animation | current_frame, frame_timer | Текущий кадр анимации | ❌ |
 
 ### Архетипы (сущности игры)
 
