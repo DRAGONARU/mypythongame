@@ -6,6 +6,6 @@ class MovementSystem(System):
     """Movement system for entities with Position and Velocity components"""
 
     def update(self, world: World) -> None:
-        for entity, pos, vel in world.query(Position, Velocity, TimeAffected):
-            pos.x += vel.x * world.time_affected.scale
-            pos.y += vel.y * world.time_affected.scale
+        for entity, pos, vel, time_affected in world.query(Position, Velocity, TimeAffected):
+            pos.x += vel.x * time_affected.scale
+            pos.y += vel.y * time_affected.scale

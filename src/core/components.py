@@ -65,3 +65,15 @@ class Knife:
     knife_type: str
     damage: int
     speed: float
+
+# knifes
+
+@dataclass(slots=True)
+class Reflective:
+    """Reflective knife"""
+    bounces_remaining: int
+
+@dataclass(slots=True)
+class Delayed:
+    """Delayed knife"""
+    activate_ticks: int
