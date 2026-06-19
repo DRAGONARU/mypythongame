@@ -28,6 +28,8 @@ class World:
         self._free_ids: list[int] = []
         self._next_id: int = 0
         self._alive: int = 0
+        self.tick: int = 0
+        self.events: list = []
 
     def _is_alive(self, entity: Entity) -> bool:
         """Return True if the entity's generation matches the current World generation.

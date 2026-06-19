@@ -1,6 +1,7 @@
 from src.core.ecs.system import System
-from src.core.components import Position, Collider
+from src.core.components import Position, Collider, CollisionFilter
 from src.utils.spatial_hash import SpatialHashGrid
+from src.core.events import CollisionEvent
 
 class CollisionSystem(System):
     """System for collision detection"""
@@ -19,6 +20,11 @@ class CollisionSystem(System):
             for other in candidates:
                 if other.id < entity.id:
                     continue    
+                f1 = world.get_component(entity, CollisionFilter)
+                f2 = world.get_component(other, CollisionFilter)
+                if f1 is not None and f2 is not None:
+                    if not self._should_collide(f1, f2):
+                        continue
                 other_pos = world.get_component(other, Position)
                 other_col = world.get_component(other, Collider)
 
@@ -29,5 +35,8 @@ class CollisionSystem(System):
                 if dist_sq <= min_dist * min_dist:
                     self._handle_collision(world, entity, other)
 
+    def _should_collide(self, entity1: CollisionFilter, entity2: CollisionFilter) -> bool:
+        return (entity1.layer & entity2.mask) and (entity2.layer & entity1.mask)
+
     def _handle_collision(self, world, entity1, entity2):
-        pass
+        world.events.append(CollisionEvent(entity1, entity2, world.tick))

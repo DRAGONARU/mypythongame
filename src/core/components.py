@@ -76,3 +76,16 @@ class Reflective:
 class Delayed:
     """Tracks remaining ticks until knife activation."""
     activate_ticks: int
+
+LAYER_PLAYER     = 1 << 0
+LAYER_ENEMY      = 1 << 1
+LAYER_KNIFE      = 1 << 2
+LAYER_PROJECTILE = 1 << 3
+LAYER_PICKUP     = 1 << 4
+LAYER_WALL       = 1 << 5
+
+@dataclass(slots=True)
+class CollisionFilter:
+    """Filters entities for collision."""
+    layer: int
+    mask: int
