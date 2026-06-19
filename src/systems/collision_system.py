@@ -2,7 +2,7 @@ from src.core.ecs.system import System
 from src.core.components import Position, Collider
 from src.utils.spatial_hash import SpatialHashGrid
 
-class ColisionSystem(System):
+class CollisionSystem(System):
     """System for collision detection"""
     def __init__(self, cell_size: float = 64.0):
         self.grid = SpatialHashGrid(cell_size)
@@ -17,6 +17,8 @@ class ColisionSystem(System):
             candidates = self.grid.query_circle(pos.x, pos.y, col.radius, exclude=entity)
 
             for other in candidates:
+                if other.id < entity.id:
+                    continue    
                 other_pos = world.get_component(other, Position)
                 other_col = world.get_component(other, Collider)
 

@@ -164,8 +164,8 @@ Sparse set даёт: cache locality, O(1) add/remove.
 | Owner | entity | Кто создал (нож → владелец) | ✅ |
 | Lifetime | remaining_ticks | До самоуничтожения | ✅ |
 | Knife | knife_type, damage, speed | Тип ножа, урон, скорость | ✅ |
-| Reflective | bounces_remaining | Сколько рикошетов осталось | ❌ |
-| Delayed | activate_tick | На каком тике активироваться | ❌ |
+| Reflective | bounces_remaining | Сколько рикошетов осталось | ✅ |
+| Delayed | activate_ticks | Сколько тиков до активации | ✅ |
 | Piercing | pierces_remaining | Сколько врагов может пробить | ❌ |
 | Orbiting | center_entity, angle, angular_speed | Вокруг чего вращается | ❌ |
 | TimeAnchored | (пустой маркер) | Игнорирует global time stop | ❌ |

@@ -1,6 +1,6 @@
 # PROGRESS — Прогресс проекта
 
-## Последняя проверка: 2026-06-15
+## Последняя проверка: 2026-06-19
 
 ---
 
@@ -11,7 +11,7 @@
 | `pyproject.toml` | ✅ Готов | Имя, зависимости, pytest-конфиг, build-system |
 | Структура папок `src/` | ✅ Создана | core, entities, systems, rendering, input, audio, ui, utils, world |
 | `__init__.py` во всех пакетах | ✅ Готов | Все 9 пакетов + core/ecs |
-| `tests/` | ✅ 143 теста | entity(8), sparse_set(22), world(35), query(20), system(10), game_loop(11), spatial_hash(29) — все проходят |
+| `tests/` | ✅ 172 теста | entity(8), sparse_set(22), world(35), query(20), system(10), game_loop(11), spatial_hash(29), movement(7), input(5), collision(9), lifetime(8) — все проходят |
 | `assets/` | ⚠️ Пустая | Нет ассетов |
 | `config/` | ⚠️ Пустая | Нет конфигов |
 | egg-info мусор | ✅ Игнорируется | `*.egg-info/` в .gitignore |
@@ -55,6 +55,50 @@
 
 ---
 
+## Компоненты
+
+| Компонент | Статус | Поля |
+|-----------|--------|------|
+| Position | ✅ | x, y |
+| Velocity | ✅ | x, y |
+| Collider | ✅ | radius |
+| Health | ✅ | value, max_value |
+| Mana | ✅ | value, max_value |
+| TimeMana | ✅ | value, max_value |
+| Experience | ✅ | level, current, to_next |
+| TimeAffected | ✅ | scale |
+| Owner | ✅ | entity |
+| Lifetime | ✅ | remaining_ticks |
+| Knife | ✅ | knife_type, damage, speed |
+| Reflective | ✅ | bounces_remaining |
+| Delayed | ✅ | activate_ticks |
+| Player | ❌ | (маркер) |
+| Enemy | ❌ | enemy_type, ai_state |
+| Boss | ❌ | phase |
+| Sprite | ❌ | texture_id, layer |
+| Animation | ❌ | current_frame, frame_timer |
+| TimelineAnchor | ❌ | timeline_id |
+| Frozen | ❌ | remaining_ticks |
+| SpellCard | ❌ | spell_type, remaining_ticks, cooldown |
+| TimeBubble | ❌ | center_x, center_y, radius, scale, falloff |
+| Projectile | ❌ | damage, owner_id |
+
+---
+
+## Системы
+
+| Система | Статус | Тесты |
+|---------|--------|-------|
+| MovementSystem | ✅ Готов | 7 тестов |
+| InputSystem | ✅ Готов | 5 тестов |
+| CollisionSystem | ⚠️ Частично | 9 тестов (broad+narrow phase; `_handle_collision` пуст) |
+| LifetimeSystem | ✅ Готов | 8 тестов |
+| KnifeSystem | ❌ | — |
+| EnemySystem | ❌ | — |
+| TimeSystem | ❌ | — |
+
+---
+
 ## Фаза 2 — Движение + Время
 
 | Компонент | Статус |
@@ -74,9 +118,9 @@
 | Spell Cards (event-driven, мана) | ❌ |
 | Способности времени (мана времени) | ❌ |
 | Enemy System | ❌ |
-| Collision System | ❌ |
+| Collision System | ⚠️ Частично | broad+narrow phase готов, `_handle_collision` пуст |
 | Player (Сакуя: HP + Mana + TimeMana + Experience) | ❌ |
-| Ввод / Управление | ❌ |
+| Ввод / Управление | ✅ Готов | InputSystem: mouse + keyboard |
 | Рендеринг | ❌ |
 | Roguelike прогрессия (опыт, уровни, драфт) | ❌ |
 
@@ -93,11 +137,13 @@
 
 ## Проблемы, требующие внимания
 
-1. **Нет тестов** — ✅ исправлено (143 теста)
+1. **Нет тестов** — ✅ исправлено (172 теста)
 2. **`game_loop.py` пустой** — ✅ исправлено
 3. **`spatial_hash.py` пустой** — ✅ исправлено
 4. **Docstring-несогласованность** — ✅ исправлено
 5. **`__init__.py` в utils** — ✅ исправлено (SpatialHashGrid экспортирован)
+6. **`CollisionSystem._handle_collision` пуст** — нет логики урона/отскока
+7. **`World._is_alive` приватный** — тесты используют приватный API
 
 ---
 
@@ -116,5 +162,12 @@
 11. ~~Написать тесты на GameLoop (детерминизм, accumulator, spiral of death, stop)~~ ✅ (11 тестов)
 12. ~~Реализовать Spatial Hash Grid (`src/utils/spatial_hash.py`)~~ ✅ (29 тестов)
 13. ~~Экспортировать SpatialHashGrid из `src/utils/__init__.py`~~ ✅
-14. Реализовать компоненты (Position, Velocity, Collider, Health, Mana, TimeMana, Experience)
-15. Реализовать MovementSystem
+14. ~~Реализовать компоненты (Position, Velocity, Collider, Health, Mana, TimeMana, Experience, TimeAffected, Owner, Lifetime, Knife, Reflective, Delayed)~~ ✅
+15. ~~Реализовать MovementSystem~~ ✅ (7 тестов)
+16. ~~Реализовать InputSystem~~ ✅ (5 тестов)
+17. ~~Реализовать CollisionSystem~~ ⚠️ (9 тестов, `_handle_collision` пуст)
+18. ~~Реализовать LifetimeSystem~~ ✅ (8 тестов)
+19. Реализовать логику `_handle_collision` (урон, отскок, уничтожение ножей)
+20. Добавить компоненты Player, Enemy, Sprite
+21. Реализовать KnifeSystem (стрельба, 3 типа ножей MVP)
+22. Реализовать базовый рендеринг (Pygame + Position + Sprite)
