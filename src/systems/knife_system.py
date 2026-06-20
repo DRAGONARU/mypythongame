@@ -6,7 +6,7 @@ import pygame
 class KnifeSystem(System):
     """Handles knife spawning, delayed activation, and reflective bouncing."""
 
-    KNIFE_SPEED = 300.0
+    KNIFE_SPEED = 300.0 / 120.0
     KNIFE_DAMAGE = 25
     KNIFE_LIFETIME = 240
     KNIFE_RADIUS = 4.0
@@ -15,14 +15,22 @@ class KnifeSystem(System):
     SPAWN_COOLDOWN = 6 
 
     def update(self, world) -> None:
-        self._handle_selection(world)
-        self._handle_spawning(world)
+        input_state = self._get_input_state(world)
+        if input_state is None:
+            return
+        self._handle_selection(world, input_state)
+        self._handle_spawning(world, input_state)
         self._activate_delayed(world)
-        self._bounce_reflective(world)
 
-    def _handle_selection(self, world) -> None:
+    def _get_input_state(self, world) -> InputState | None:
+        """Return the single InputState in the world, or None."""
+        for entity, state in world.query(InputState):
+            return state
+        return None
+
+    def _handle_selection(self, world, input_state: InputState) -> None:
         """Handles knife selection and available knife types."""
-        for entity, loadout, input_state in world.query(KnifeLoadout, InputState):
+        for entity, loadout in world.query(KnifeLoadout):
             keys = input_state.keys_pressed
             if len(keys) > pygame.K_1 and keys[pygame.K_1] and "normal" in loadout.available:
                 loadout.current = "normal"
@@ -31,9 +39,9 @@ class KnifeSystem(System):
             elif len(keys) > pygame.K_3 and keys[pygame.K_3] and "reflective" in loadout.available:
                 loadout.current = "reflective"
         
-    def _handle_spawning(self, world) -> None:
+    def _handle_spawning(self, world, input_state: InputState) -> None:
         """Handles knife spawning and knife cooldown."""
-        for entity, loadout, pos, input_state in world.query(KnifeLoadout, Position, InputState):
+        for entity, loadout, pos in world.query(KnifeLoadout, Position):
             if loadout.cooldown > 0:
                 loadout.cooldown -= 1
                 continue
@@ -71,14 +79,26 @@ class KnifeSystem(System):
 
     def _activate_delayed(self, world) -> None:
         """Handles delayed knife activation."""
+        ready = []
         for entity, delayed, time_aff in world.query(Delayed, TimeAffected):
             delayed.activate_ticks -= 1
             if delayed.activate_ticks <= 0:
                 time_aff.scale = 1.0
-                world.remove_component(entity, Delayed)
-    
-    def _bounce_reflective(self, world) -> None:
-        """Handles reflective knife bouncing off enemies."""
+                ready.append(entity)
+        for entity in ready:
+            world.remove_component(entity, Delayed)
+
+
+class KnifeBounceSystem(System):
+    """Reflects reflective knives off enemies after collision events.
+
+    Must run AFTER CollisionSystem generates events and AFTER
+    CombatSystem applies damage, so the knife survives (Reflective
+    knives are not destroyed by CombatSystem) and bounces away from
+    the enemy it just hit.
+    """
+
+    def update(self, world) -> None:
         for event in world.events:
             self._try_bounce(world, event.a, event.b)
             self._try_bounce(world, event.b, event.a)

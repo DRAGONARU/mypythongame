@@ -1,5 +1,6 @@
 from typing import Callable
 import time
+import pygame
 
 
 class GameLoop:
@@ -56,6 +57,7 @@ class GameLoop:
         prev_time = time.perf_counter()
 
         while self._running:
+            pygame.event.pump()
             now = time.perf_counter()
             real_dt = min(now - prev_time, 0.25)
             prev_time = now

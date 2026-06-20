@@ -26,7 +26,7 @@ def test_game_initializes_world(game):
 
 def test_game_initializes_systems(game):
     """Game creates all systems on init."""
-    assert len(game.systems) == 6
+    assert len(game.systems) == 9
 
 
 def test_game_initializes_loop(game):

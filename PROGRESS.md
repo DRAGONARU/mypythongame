@@ -1,6 +1,6 @@
 # PROGRESS — Прогресс проекта
 
-## Последняя проверка: 2026-06-20
+## Последняя проверка: 2026-06-21
 
 ---
 
@@ -11,7 +11,7 @@
 | `pyproject.toml` | ✅ Готов | Имя, зависимости, pytest-конфиг, build-system |
 | Структура папок `src/` | ✅ Создана | core, entities, systems, rendering, input, audio, ui, utils, world |
 | `__init__.py` во всех пакетах | ✅ Готов | Все 9 пакетов + core/ecs |
-| `tests/` | ✅ 230 тестов | entity(8), sparse_set(22), world(35), query(20), system(10), game_loop(11), spatial_hash(29), movement(7), input(5), collision(11), lifetime(8), combat(10), game(10), knife(27) — все проходят |
+| `tests/` | ✅ 262 теста | entity(8), sparse_set(22), world(35), query(20), system(10), game_loop(11), spatial_hash(29), movement(7), player_movement(13), input(5), collision(11), lifetime(8), combat(10), game(10), knife(30), enemy(16) — все проходят |
 | `assets/` | ⚠️ Пустая | Нет ассетов |
 | `config/` | ⚠️ Пустая | Нет конфигов |
 | egg-info мусор | ✅ Игнорируется | `*.egg-info/` в .gitignore |
@@ -92,13 +92,16 @@
 
 | Система | Статус | Тесты |
 |---------|--------|-------|
-| MovementSystem | ✅ Готов | 7 тестов |
+| MovementSystem | ✅ Готов | 7 тестов (velocity × TimeAffected.scale per-tick) |
+| PlayerMovementSystem | ✅ Готов | 13 тестов (WASD, диагональ-нормализация, in-place) |
 | InputSystem | ✅ Готов | 5 тестов (пишет InputState в World) |
 | CollisionSystem | ✅ Готов | 11 тестов (broad+narrow + CollisionFilter + CollisionEvent) |
 | LifetimeSystem | ✅ Готов | 8 тестов |
-| CombatSystem | ✅ Готов | 10 тестов (урон, уничтожение, friendly fire, reflective) |
-| KnifeSystem | ✅ Готов | 27 тестов (спавн 3 типа, delayed, reflective bounce, selection) |
-| EnemySystem | ❌ | — |
+| CombatSystem | ✅ Готов | 10 тестов (урон, уничтожение, friendly fire, reflective не уничтожается) |
+| KnifeSystem | ✅ Готов | 30 тестов (спавн 3 типа, delayed, selection) |
+| KnifeBounceSystem | ✅ Готов | в составе knife-тестов (отражение после Collision+Combat) |
+| EnemySystem | ✅ Готов | 16 тестов (преследование, смерть, in-place velocity) |
+| Renderer | ✅ Готов | без автотестов (визуальная проверка) |
 | TimeSystem | ❌ | — |
 
 ---
@@ -107,11 +110,12 @@
 
 | Элемент | Статус | Примечание |
 |---------|--------|------------|
-| `Game.__init__` | ✅ Готов | World + 6 систем + GameLoop |
-| `_tick(dt)` | ✅ Готов | Инкремент tick, запуск систем, очистка events |
-| `_render(alpha)` | ✅ Готов | Заглушка (pass) |
+| `Game.__init__` | ✅ Готов | World + 9 систем + GameLoop + Renderer(screen_size) |
+| `_tick(dt)` | ✅ Готов | Инкремент tick, запуск систем, очистка events, `_check_quit` (ESC/Q) |
+| `_render(alpha)` | ✅ Готов | Делегирует в Renderer.render(world, alpha) |
 | `run()` / `stop()` | ✅ Готов | Делегирует в GameLoop |
-| Порядок систем | ✅ | Input → Knife → Movement → Collision → Combat → Lifetime |
+| Порядок систем | ✅ | Input → PlayerMovement → Knife → Enemy → Movement → Collision → Combat → KnifeBounce → Lifetime |
+| `main.py` | ✅ Готов | pygame.init → Game → ArenaSetup.setup → run → quit |
 
 ---
 

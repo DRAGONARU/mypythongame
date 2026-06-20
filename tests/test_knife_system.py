@@ -1,8 +1,8 @@
-from src.systems.knife_system import KnifeSystem
+from src.systems.knife_system import KnifeSystem, KnifeBounceSystem
 from src.core.components import (
     Knife, Position, Velocity, Collider, Lifetime, Owner, TimeAffected,
     CollisionFilter, Reflective, Delayed, KnifeLoadout, Player, Enemy,
-    InputState, LAYER_KNIFE, LAYER_ENEMY,
+    InputState, Health, LAYER_KNIFE, LAYER_ENEMY,
 )
 from src.core.events import CollisionEvent
 from src.core.ecs.world import World
@@ -13,6 +13,11 @@ import pytest
 @pytest.fixture
 def system():
     return KnifeSystem()
+
+
+@pytest.fixture
+def bounce_system():
+    return KnifeBounceSystem()
 
 
 @pytest.fixture
@@ -317,6 +322,34 @@ def test_delayed_activation_removes_delayed_component(system, world):
     assert world.get_component(knife, Delayed) is None
 
 
+def test_multiple_delayed_knives_activate_same_tick(system, world):
+    """Multiple delayed knives activating in one tick do not raise or skip."""
+    owner = _add_player(world)
+    knives = [_add_delayed_knife(world, owner, activate_ticks=1) for _ in range(5)]
+
+    system.update(world)
+
+    for knife in knives:
+        assert world.get_component(knife, Delayed) is None
+        assert world.get_component(knife, TimeAffected).scale == 1.0
+
+
+def test_multiple_delayed_knives_partial_activation(system, world):
+    """Some knives ready, some not: only ready ones activate, none skipped."""
+    owner = _add_player(world)
+    ready = [_add_delayed_knife(world, owner, activate_ticks=1) for _ in range(3)]
+    not_ready = [_add_delayed_knife(world, owner, activate_ticks=5) for _ in range(3)]
+
+    system.update(world)
+
+    for knife in ready:
+        assert world.get_component(knife, Delayed) is None
+        assert world.get_component(knife, TimeAffected).scale == 1.0
+    for knife in not_ready:
+        assert world.get_component(knife, Delayed) is not None
+        assert world.get_component(knife, TimeAffected).scale == 0.0
+
+
 # --- _bounce_reflective tests ---
 
 def _add_reflective_knife(world, owner, x=0.0, y=0.0, vx=100.0, vy=0.0, bounces=3):
@@ -341,44 +374,44 @@ def _add_enemy(world, x=0.0, y=0.0, radius=10.0):
     return e
 
 
-def test_bounce_changes_velocity(system, world):
+def test_bounce_changes_velocity(bounce_system, world):
     """Reflective knife velocity changes after bouncing off enemy."""
     owner = _add_player(world)
     knife = _add_reflective_knife(world, owner, x=0.0, y=0.0, vx=100.0, vy=0.0)
     enemy = _add_enemy(world, x=10.0, y=0.0, radius=10.0)
 
     world.events.append(CollisionEvent(knife, enemy, world.tick))
-    system.update(world)
+    bounce_system.update(world)
 
     vel = world.get_component(knife, Velocity)
     assert vel.x < 0
 
 
-def test_bounce_decrements_bounces(system, world):
+def test_bounce_decrements_bounces(bounce_system, world):
     """Each bounce decrements bounces_remaining."""
     owner = _add_player(world)
     knife = _add_reflective_knife(world, owner, bounces=3)
     enemy = _add_enemy(world, x=10.0, y=0.0)
 
     world.events.append(CollisionEvent(knife, enemy, world.tick))
-    system.update(world)
+    bounce_system.update(world)
 
     assert world.get_component(knife, Reflective).bounces_remaining == 2
 
 
-def test_bounce_removes_reflective_at_zero(system, world):
+def test_bounce_removes_reflective_at_zero(bounce_system, world):
     """Reflective component removed when bounces reach zero."""
     owner = _add_player(world)
     knife = _add_reflective_knife(world, owner, bounces=1)
     enemy = _add_enemy(world, x=10.0, y=0.0)
 
     world.events.append(CollisionEvent(knife, enemy, world.tick))
-    system.update(world)
+    bounce_system.update(world)
 
     assert world.get_component(knife, Reflective) is None
 
 
-def test_bounce_ignores_non_reflective_knife(system, world):
+def test_bounce_ignores_non_reflective_knife(bounce_system, world):
     """Non-reflective knife is not affected by bounce logic."""
     owner = _add_player(world)
     knife = _add_reflective_knife(world, owner)
@@ -387,12 +420,12 @@ def test_bounce_ignores_non_reflective_knife(system, world):
 
     original_vx = world.get_component(knife, Velocity).x
     world.events.append(CollisionEvent(knife, enemy, world.tick))
-    system.update(world)
+    bounce_system.update(world)
 
     assert world.get_component(knife, Velocity).x == original_vx
 
 
-def test_bounce_ignores_non_enemy(system, world):
+def test_bounce_ignores_non_enemy(bounce_system, world):
     """Bounce only triggers off enemies, not other entities."""
     owner = _add_player(world)
     knife = _add_reflective_knife(world, owner)
@@ -402,19 +435,19 @@ def test_bounce_ignores_non_enemy(system, world):
 
     original_vx = world.get_component(knife, Velocity).x
     world.events.append(CollisionEvent(knife, other, world.tick))
-    system.update(world)
+    bounce_system.update(world)
 
     assert world.get_component(knife, Velocity).x == original_vx
 
 
-def test_bounce_separates_knife_from_enemy(system, world):
+def test_bounce_separates_knife_from_enemy(bounce_system, world):
     """After bounce, knife is pushed out of overlap with enemy."""
     owner = _add_player(world)
     knife = _add_reflective_knife(world, owner, x=5.0, y=0.0, vx=100.0, vy=0.0)
     enemy = _add_enemy(world, x=10.0, y=0.0, radius=10.0)
 
     world.events.append(CollisionEvent(knife, enemy, world.tick))
-    system.update(world)
+    bounce_system.update(world)
 
     knife_pos = world.get_component(knife, Position)
     enemy_pos = world.get_component(enemy, Position)
@@ -422,7 +455,7 @@ def test_bounce_separates_knife_from_enemy(system, world):
     assert dist >= 14.0 - 0.01
 
 
-def test_bounce_dead_knife_skipped(system, world):
+def test_bounce_dead_knife_skipped(bounce_system, world):
     """Already destroyed knife is skipped in bounce."""
     owner = _add_player(world)
     knife = _add_reflective_knife(world, owner)
@@ -430,7 +463,7 @@ def test_bounce_dead_knife_skipped(system, world):
 
     world.destroy_entity(knife)
     world.events.append(CollisionEvent(knife, enemy, world.tick))
-    system.update(world)
+    bounce_system.update(world)
 
 
 # --- empty world ---
@@ -438,3 +471,45 @@ def test_bounce_dead_knife_skipped(system, world):
 def test_knife_system_empty_world(system, world):
     """System handles empty world gracefully."""
     system.update(world)
+
+
+# --- integration: bounce must run after collision+combat ---
+
+
+def test_reflective_knife_does_not_repeat_damage(bounce_system, world):
+    """Reflective knife deals damage once per bounce, not every tick.
+
+    Regression: previously bounce ran before collision events were
+    generated, so the knife never bounced and dealt damage every
+    tick while overlapping the enemy, killing it instantly.
+    """
+    from src.systems.combat_system import CombatSystem
+    owner = _add_player(world)
+    knife = _add_reflective_knife(world, owner, x=0.0, y=0.0, vx=100.0, vy=0.0)
+    enemy = _add_enemy(world, x=10.0, y=0.0, radius=10.0)
+    world.add_component(enemy, Health(value=50, max_value=50))
+
+    combat = CombatSystem()
+
+    world.events.append(CollisionEvent(knife, enemy, world.tick))
+    combat.update(world)
+    bounce_system.update(world)
+    world.events.clear()
+
+    health_after_first_hit = world.get_component(enemy, Health).value
+    assert health_after_first_hit == 25
+
+    knife_pos = world.get_component(knife, Position)
+    knife_vel = world.get_component(knife, Velocity)
+    knife_pos.x += knife_vel.x
+    knife_pos.y += knife_vel.y
+
+    if world.get_component(knife, Collider) is not None:
+        from src.systems.collision_system import CollisionSystem
+        collision = CollisionSystem()
+        collision.update(world)
+    combat.update(world)
+    bounce_system.update(world)
+    world.events.clear()
+
+    assert world.get_component(enemy, Health).value == 25

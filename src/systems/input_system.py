@@ -1,5 +1,4 @@
 from src.core.ecs.system import System
-from pygame import key, mouse
 from src.core.components import InputState
 
 
@@ -22,7 +21,7 @@ class InputSystem(System):
 
     def _get_mouse_pos(self) -> tuple[int, int]:
         from pygame import mouse
-        return mouse._get_mouse_pos()
+        return mouse.get_pos()
     
     def _get_mouse_pressed(self) -> tuple[bool, bool, bool]:
         from pygame import mouse
