@@ -170,15 +170,18 @@ Sparse set даёт: cache locality, O(1) add/remove.
 | Orbiting | center_entity, angle, angular_speed | Вокруг чего вращается | ❌ |
 | TimeAnchored | (пустой маркер) | Игнорирует global time stop | ❌ |
 | Recursive | trajectory: list[Position] | Помнит траекторию, не откатывается при rewind | ❌ |
-| Player | (пустой маркер) | Маркер игрока | ❌ |
+| Player | (пустой маркер) | Маркер игрока | ✅ |
 | Experience | level, current, to_next | Текущий опыт, уровень, опыт до следующего уровня | ✅ |
-| Enemy | enemy_type, ai_state | Тип врага, состояние ИИ | ❌ |
+| Enemy | enemy_type, ai_state | Тип врага, состояние ИИ | ✅ |
 | Boss | phase | Фаза босса | ❌ |
 | SpellCard | spell_type, remaining_ticks, cooldown | Тип спелла, оставшееся время, кд | ❌ |
 | TimeBubble | center_x, center_y, radius, scale, falloff | Параметры временного пузыря | ❌ |
 | Projectile | damage, owner_id | Универсальный проджектайл (вражеский) | ❌ |
 | Sprite | texture_id, layer | Что рисовать, слой отрисовки | ❌ |
 | Animation | current_frame, frame_timer | Текущий кадр анимации | ❌ |
+| CollisionFilter | layer, mask | Битовые слои коллизий | ✅ |
+| InputState | mouse_x, mouse_y, mouse_pressed, keys_pressed | Состояние ввода (компонент) | ✅ |
+| KnifeLoadout | current, available, cooldown | Выбор типа ножа игроком | ✅ |
 
 ### Архетипы (сущности игры)
 
@@ -192,9 +195,9 @@ Sparse set даёт: cache locality, O(1) add/remove.
 
 | Сущность | Компоненты |
 |----------|------------|
-| Normal Knife | Position, Velocity, Collider, Knife(normal), Lifetime, Owner, TimeAffected, TimelineAnchor, Sprite |
-| Delayed Knife | Position, Collider, Knife(delayed), Delayed, Owner, TimeAffected, TimelineAnchor, Sprite |
-| Reflective Knife | Position, Velocity, Collider, Knife(reflective), Reflective, Lifetime, Owner, TimeAffected, TimelineAnchor, Sprite |
+| Normal Knife | Position, Velocity, Collider, Knife(normal), Lifetime, Owner, TimeAffected, CollisionFilter, Sprite |
+| Delayed Knife | Position, Velocity(scale=0), Collider, Knife(delayed), Delayed, Lifetime, Owner, TimeAffected, CollisionFilter, Sprite |
+| Reflective Knife | Position, Velocity, Collider, Knife(reflective), Reflective, Lifetime, Owner, TimeAffected, CollisionFilter, Sprite |
 | Orbiting Knife | Position, Knife(orbiting), Orbiting, Collider, Owner, TimeAffected, TimelineAnchor, Sprite |
 | Piercing Knife | Position, Velocity, Collider, Knife(piercing), Piercing, Lifetime, Owner, TimeAffected, TimelineAnchor, Sprite |
 | TimeAnchored Knife | Position, Velocity, Collider, Knife(time_anchored), TimeAnchored, Lifetime, Owner, Sprite |

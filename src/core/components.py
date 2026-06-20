@@ -89,3 +89,27 @@ class CollisionFilter:
     """Filters entities for collision."""
     layer: int
     mask: int
+
+@dataclass(slots=True)
+class Player:
+    """Player marker"""
+
+@dataclass(slots=True)
+class Enemy:
+    """Enemy marker"""
+    enemy_type: str = "basic"
+    ai_state: str = "idle"
+
+@dataclass(slots=True)
+class InputState:
+    mouse_x: float = 0.0
+    mouse_y: float = 0.0
+    mouse_pressed: tuple[bool, bool, bool] = (False, False, False)
+    keys_pressed: tuple[bool, ...] = ()
+
+@dataclass(slots=True)
+class KnifeLoadout:
+    """Currently selected knife type and available types."""
+    current: str = "normal"
+    available: tuple[str, ...] = ("normal", "delayed", "reflective")
+    cooldown: int = 0

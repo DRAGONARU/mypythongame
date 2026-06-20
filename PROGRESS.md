@@ -1,6 +1,6 @@
 # PROGRESS — Прогресс проекта
 
-## Последняя проверка: 2026-06-19
+## Последняя проверка: 2026-06-20
 
 ---
 
@@ -11,7 +11,7 @@
 | `pyproject.toml` | ✅ Готов | Имя, зависимости, pytest-конфиг, build-system |
 | Структура папок `src/` | ✅ Создана | core, entities, systems, rendering, input, audio, ui, utils, world |
 | `__init__.py` во всех пакетах | ✅ Готов | Все 9 пакетов + core/ecs |
-| `tests/` | ✅ 172 теста | entity(8), sparse_set(22), world(35), query(20), system(10), game_loop(11), spatial_hash(29), movement(7), input(5), collision(9), lifetime(8) — все проходят |
+| `tests/` | ✅ 230 тестов | entity(8), sparse_set(22), world(35), query(20), system(10), game_loop(11), spatial_hash(29), movement(7), input(5), collision(11), lifetime(8), combat(10), game(10), knife(27) — все проходят |
 | `assets/` | ⚠️ Пустая | Нет ассетов |
 | `config/` | ⚠️ Пустая | Нет конфигов |
 | egg-info мусор | ✅ Игнорируется | `*.egg-info/` в .gitignore |
@@ -72,8 +72,11 @@
 | Knife | ✅ | knife_type, damage, speed |
 | Reflective | ✅ | bounces_remaining |
 | Delayed | ✅ | activate_ticks |
-| Player | ❌ | (маркер) |
-| Enemy | ❌ | enemy_type, ai_state |
+| Player | ✅ | (маркер) |
+| Enemy | ✅ | enemy_type, ai_state |
+| CollisionFilter | ✅ | layer, mask |
+| InputState | ✅ | mouse_x, mouse_y, mouse_pressed, keys_pressed |
+| KnifeLoadout | ✅ | current, available, cooldown |
 | Boss | ❌ | phase |
 | Sprite | ❌ | texture_id, layer |
 | Animation | ❌ | current_frame, frame_timer |
@@ -90,12 +93,25 @@
 | Система | Статус | Тесты |
 |---------|--------|-------|
 | MovementSystem | ✅ Готов | 7 тестов |
-| InputSystem | ✅ Готов | 5 тестов |
-| CollisionSystem | ⚠️ Частично | 9 тестов (broad+narrow phase; `_handle_collision` пуст) |
+| InputSystem | ✅ Готов | 5 тестов (пишет InputState в World) |
+| CollisionSystem | ✅ Готов | 11 тестов (broad+narrow + CollisionFilter + CollisionEvent) |
 | LifetimeSystem | ✅ Готов | 8 тестов |
-| KnifeSystem | ❌ | — |
+| CombatSystem | ✅ Готов | 10 тестов (урон, уничтожение, friendly fire, reflective) |
+| KnifeSystem | ✅ Готов | 27 тестов (спавн 3 типа, delayed, reflective bounce, selection) |
 | EnemySystem | ❌ | — |
 | TimeSystem | ❌ | — |
+
+---
+
+## Класс Game
+
+| Элемент | Статус | Примечание |
+|---------|--------|------------|
+| `Game.__init__` | ✅ Готов | World + 6 систем + GameLoop |
+| `_tick(dt)` | ✅ Готов | Инкремент tick, запуск систем, очистка events |
+| `_render(alpha)` | ✅ Готов | Заглушка (pass) |
+| `run()` / `stop()` | ✅ Готов | Делегирует в GameLoop |
+| Порядок систем | ✅ | Input → Knife → Movement → Collision → Combat → Lifetime |
 
 ---
 
@@ -114,13 +130,13 @@
 
 | Компонент | Статус |
 |-----------|--------|
-| Knife System (3 типа MVP + 4 доп.) | ❌ |
+| Knife System (3 типа MVP + 4 доп.) | ✅ 3 типа MVP: Normal, Delayed, Reflective |
 | Spell Cards (event-driven, мана) | ❌ |
 | Способности времени (мана времени) | ❌ |
 | Enemy System | ❌ |
-| Collision System | ⚠️ Частично | broad+narrow phase готов, `_handle_collision` пуст |
-| Player (Сакуя: HP + Mana + TimeMana + Experience) | ❌ |
-| Ввод / Управление | ✅ Готов | InputSystem: mouse + keyboard |
+| Collision System | ✅ Готов | broad+narrow + CollisionFilter (битовые слои) + CollisionEvent |
+| Player (Сакуя: HP + Mana + TimeMana + Experience) | ⚠️ Компоненты готовы, нет спавна |
+| Ввод / Управление | ✅ Готов | InputSystem: mouse + keyboard → InputState компонент |
 | Рендеринг | ❌ |
 | Roguelike прогрессия (опыт, уровни, драфт) | ❌ |
 
@@ -137,13 +153,15 @@
 
 ## Проблемы, требующие внимания
 
-1. **Нет тестов** — ✅ исправлено (172 теста)
+1. **Нет тестов** — ✅ исправлено (230 тестов)
 2. **`game_loop.py` пустой** — ✅ исправлено
 3. **`spatial_hash.py` пустой** — ✅ исправлено
 4. **Docstring-несогласованность** — ✅ исправлено
 5. **`__init__.py` в utils** — ✅ исправлено (SpatialHashGrid экспортирован)
-6. **`CollisionSystem._handle_collision` пуст** — нет логики урона/отскока
+6. **`CollisionSystem._handle_collision`** — ✅ исправлено (генерирует CollisionEvent)
 7. **`World._is_alive` приватный** — тесты используют приватный API
+8. **`Game._render` — заглушка** — нет рендеринга
+9. **Нет спавна игрока/врагов** — компоненты готовы, нет setup-функции
 
 ---
 
@@ -159,15 +177,18 @@
 8. ~~Написать тесты на весь ECS~~ ✅ (103 теста)
 9. ~~Обновить `__init__.py` в ecs — реэкспорт публичного API~~ ✅
 10. ~~Реализовать Fixed Tick Game Loop (`src/core/game_loop.py`)~~ ✅
-11. ~~Написать тесты на GameLoop (детерминизм, accumulator, spiral of death, stop)~~ ✅ (11 тестов)
-12. ~~Реализовать Spatial Hash Grid (`src/utils/spatial_hash.py`)~~ ✅ (29 тестов)
-13. ~~Экспортировать SpatialHashGrid из `src/utils/__init__.py`~~ ✅
-14. ~~Реализовать компоненты (Position, Velocity, Collider, Health, Mana, TimeMana, Experience, TimeAffected, Owner, Lifetime, Knife, Reflective, Delayed)~~ ✅
+11. ~~Написать тесты на GameLoop~~ ✅ (11 тестов)
+12. ~~Реализовать Spatial Hash Grid~~ ✅ (29 тестов)
+13. ~~Экспортировать SpatialHashGrid~~ ✅
+14. ~~Реализовать компоненты~~ ✅ (16 компонентов)
 15. ~~Реализовать MovementSystem~~ ✅ (7 тестов)
 16. ~~Реализовать InputSystem~~ ✅ (5 тестов)
-17. ~~Реализовать CollisionSystem~~ ⚠️ (9 тестов, `_handle_collision` пуст)
+17. ~~Реализовать CollisionSystem~~ ✅ (11 тестов)
 18. ~~Реализовать LifetimeSystem~~ ✅ (8 тестов)
-19. Реализовать логику `_handle_collision` (урон, отскок, уничтожение ножей)
-20. Добавить компоненты Player, Enemy, Sprite
-21. Реализовать KnifeSystem (стрельба, 3 типа ножей MVP)
-22. Реализовать базовый рендеринг (Pygame + Position + Sprite)
+19. ~~Реализовать CombatSystem~~ ✅ (10 тестов)
+20. ~~Реализовать KnifeSystem~~ ✅ (27 тестов, 3 типа ножей)
+21. ~~Реализовать Game~~ ✅ (10 тестов)
+22. Реализовать базовый рендеринг (Pygame: круги для Position + Collider)
+23. Реализовать спавн игрока и врагов (тестовая арена)
+24. Реализовать EnemySystem (ИИ: преследование игрока)
+25. Реализовать TimeSystem (local_time_scale, Time Stop, Slow)

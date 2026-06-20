@@ -1,5 +1,5 @@
 from src.core.ecs.system import System
-from src.core.components import Knife, Health, Owner
+from src.core.components import Knife, Health, Owner, Reflective
 
 class CombatSystem(System):
     """System for combat"""
@@ -18,4 +18,5 @@ class CombatSystem(System):
             return
         if knife and health:
             health.value -= knife.damage
-            world.destroy_entity(attacker)
+            if world.get_component(attacker, Reflective) is None:
+                world.destroy_entity(attacker)

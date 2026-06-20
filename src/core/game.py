@@ -1,5 +1,5 @@
 from src.core.ecs.world import World
-from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem
+from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem, KnifeSystem
 from src.core.game_loop import GameLoop
 
 class Game:
@@ -8,6 +8,7 @@ class Game:
         self.world = World()
         self.systems = [
             InputSystem(),
+            KnifeSystem(),
             MovementSystem(),
             CollisionSystem(),
             CombatSystem(),
