@@ -1,5 +1,5 @@
 from src.core.ecs.system import System
-from src.core.components import TimeAffected, TimeMana, Player
+from src.core.components import TimeAffected, TimeMana, Player, Delayed
 from src.core.components import InputState
 import pygame
 from config.config_params import PLAYER_TIME_MANA, NORMAL, SLOW, TIME_STOP, REWIND, SLOW_SCALE, TIME_STOP_DRAIN, SLOW_DRAIN
@@ -10,6 +10,21 @@ class TimeSystem(System):
 
     def __init__(self):
         self.current_mode: str = NORMAL
+
+    @property
+    def current_scale(self) -> float:
+        """Global time scale derived from the current mode.
+
+        Returns 1.0 for NORMAL, SLOW_SCALE for SLOW, 0.0 for TIME_STOP.
+        The player's own TimeAffected is pinned to 1.0 by _apply_multiplier
+        so movement stays normal during time effects; this property exposes
+        the world-wide scale other systems (e.g. regen) should respect.
+        """
+        if self.current_mode == SLOW:
+            return SLOW_SCALE
+        if self.current_mode == TIME_STOP:
+            return 0.0
+        return 1.0
 
     def update(self, world) -> None:
         input_state = self._get_input_state(world)
@@ -67,10 +82,17 @@ class TimeSystem(System):
             self._apply_multiplier(world, 0.0)
 
     def _apply_multiplier(self, world, scale: float) -> None:
-        """Apply a TimeScale to the world"""
+        """Apply a TimeScale to the world.
+
+        Delayed knives are skipped — their scale is managed by
+        KnifeSystem._activate_delayed (frozen at 0.0 until activation),
+        overriding global time mode so they stay put until ready.
+        """
         for entity, time_aff in world.query(TimeAffected):
             is_player = world.get_component(entity, Player) is not None
-            if not is_player:
-                time_aff.scale = scale
-            else:
+            if is_player:
                 time_aff.scale = 1.0
+            elif world.get_component(entity, Delayed) is not None:
+                time_aff.scale = 0.0
+            else:
+                time_aff.scale = scale

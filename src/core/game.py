@@ -1,11 +1,11 @@
 from src.core.ecs.world import World
-from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem, KnifeSystem, KnifeBounceSystem, EnemySystem, PlayerMovementSystem, SeparationSystem, RewindSystem, TimeSystem
+from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem, KnifeSystem, KnifeBounceSystem, EnemySystem, PlayerMovementSystem, SeparationSystem, RewindSystem, TimeSystem, PlayerGainSystem, WaveSpawner
 from src.core.game_loop import GameLoop
 from src.rendering.render import Renderer
 from src.core.event_log import EventLog
 from src.core.snapshots import SnapshotBuffer
-from src.core.components import InputState, Player, TimeMana, Health
-from config.config_params import SCREEN_SIZE, REWIND_CAPACITY_TICKS, SNAPSHOT_CAPACITY
+from src.core.components import InputState, Player, TimeMana, Health, Enemy
+from config.config_params import SCREEN_SIZE, REWIND_CAPACITY_TICKS, SNAPSHOT_CAPACITY, USE_MUSIC, MUSIC_PATH, MUSIC_VOLUME
 import pygame
 
 
@@ -14,6 +14,9 @@ class Game:
     def __init__(self, screen_size: tuple[int, int] = SCREEN_SIZE):
         self.world = World()
         self.input_system = InputSystem()
+        self.time_system = TimeSystem()
+        self.wave_spawner = WaveSpawner(screen_size)
+        self.victory: bool = False
         self.systems = [
             self.input_system,
             PlayerMovementSystem(),
@@ -25,6 +28,8 @@ class Game:
             CombatSystem(),
             KnifeBounceSystem(),
             LifetimeSystem(),
+            PlayerGainSystem(self.time_system),
+            self.wave_spawner,
         ]
         self._renderer = Renderer(screen_size)
         self.loop = GameLoop(tick_fn=self._tick, render_fn=self._render)
@@ -32,7 +37,19 @@ class Game:
         self.event_log = EventLog(capacity_ticks=REWIND_CAPACITY_TICKS)
         self.snapshot_buffer = SnapshotBuffer(capacity=SNAPSHOT_CAPACITY)
         self.world.event_log = self.event_log
-        self.time_system = TimeSystem()
+        self._start_music()
+
+    def _start_music(self) -> None:
+        """Start looping background music if enabled and available."""
+        if not USE_MUSIC:
+            return
+        try:
+            pygame.mixer.init()
+            pygame.mixer.music.load(MUSIC_PATH)
+            pygame.mixer.music.set_volume(MUSIC_VOLUME)
+            pygame.mixer.music.play(loops=-1)
+        except (pygame.error, FileNotFoundError):
+            pass
 
     def _tick(self, dt: float) -> None:
         if self._rewind():
@@ -48,6 +65,7 @@ class Game:
         self.snapshot_buffer.capture(self.world)
         self._check_quit()
         self._check_player_death()
+        self._check_victory()
 
     def _check_player_death(self) -> None:
         """Stop the loop if the player's Health reaches zero."""
@@ -55,6 +73,15 @@ class Game:
             if health.value <= 0:
                 self.loop.stop()
             break
+
+    def _check_victory(self) -> None:
+        """Stop the loop once all waves are spawned and cleared."""
+        if not self.wave_spawner.all_spawned:
+            return
+        for entity, enemy in self.world.query(Enemy):
+            return
+        self.victory = True
+        self.loop.stop()
 
     def _check_quit(self) -> None:
         """Stop the loop if ESC or Q is pressed."""

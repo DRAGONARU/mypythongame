@@ -1,6 +1,6 @@
 from src.systems.time_system import TimeSystem
 from config.config_params import NORMAL, SLOW, TIME_STOP, SLOW_SCALE, TIME_STOP_DRAIN, SLOW_DRAIN
-from src.core.components import Position, TimeAffected, TimeMana, Player, Enemy, InputState
+from src.core.components import Position, TimeAffected, TimeMana, Player, Enemy, InputState, Delayed
 from src.core.ecs.world import World
 import pygame
 import pytest
@@ -269,3 +269,56 @@ class TestEdgeCases:
 
         assert system.current_mode == NORMAL
         assert world.get_component(e, TimeAffected).scale == 1.0
+
+
+# --- delayed knives are not unfrozen by TimeSystem ---
+
+
+def test_delayed_knife_stays_frozen_in_normal(system, world):
+    """Delayed knives keep scale=0 in NORMAL mode (self-managed)."""
+    _add_input_state(world)
+    _add_player(world, mana=100)
+    knife = world.create_entity()
+    world.add_component(knife, TimeAffected(scale=0.0))
+    world.add_component(knife, Delayed(activate_ticks=60))
+
+    system.update(world)
+
+    assert world.get_component(knife, TimeAffected).scale == 0.0
+
+
+def test_delayed_knife_stays_frozen_in_time_stop(system, world):
+    """Delayed knives stay frozen even during Time Stop."""
+    _add_input_state(world, keys=_make_keys(pygame.K_SPACE))
+    _add_player(world, mana=100)
+    knife = world.create_entity()
+    world.add_component(knife, TimeAffected(scale=0.0))
+    world.add_component(knife, Delayed(activate_ticks=60))
+
+    system.update(world)
+
+    assert world.get_component(knife, TimeAffected).scale == 0.0
+
+
+def test_delayed_knife_stays_frozen_in_slow(system, world):
+    """Delayed knives stay frozen even during Slow."""
+    _add_input_state(world, keys=_make_keys(pygame.K_e))
+    _add_player(world, mana=100)
+    knife = world.create_entity()
+    world.add_component(knife, TimeAffected(scale=0.0))
+    world.add_component(knife, Delayed(activate_ticks=60))
+
+    system.update(world)
+
+    assert world.get_component(knife, TimeAffected).scale == 0.0
+
+
+def test_non_delayed_entity_slowed_normally(system, world):
+    """Entities without Delayed are still affected by time mode."""
+    _add_input_state(world, keys=_make_keys(pygame.K_SPACE))
+    _add_player(world, mana=100)
+    e = _add_enemy(world)
+
+    system.update(world)
+
+    assert world.get_component(e, TimeAffected).scale == 0.0

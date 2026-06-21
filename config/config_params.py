@@ -27,9 +27,12 @@ PLAYER_SPEED: float = 250.0 / TICK_RATE
 PLAYER_RADIUS: float = 12.0
 PLAYER_HP: int = 100
 PLAYER_MANA: int = 100
-PLAYER_TIME_MANA: int = 100
+PLAYER_TIME_MANA: int = 500
 PLAYER_XP_TO_NEXT: int = 100
-
+PLAYER_HP_REGEN: int = 2
+PLAYER_MANA_REGEN: int = 2
+PLAYER_TIME_MANA_REGEN: int = 50
+COOLDOWN_TICKS = 10
 
 # --- Enemy ---
 
@@ -39,14 +42,19 @@ ENEMY_HP: int = 50
 ENEMY_CONTACT_DAMAGE: int = 10
 ENEMY_HIT_COOLDOWN: int = 30
 SPAWN_RING_RADIUS: float = 200.0
-ARENA_ENEMY_COUNT: int = 100
+
+# --- Wave spawner ---
+
+WAVE_SPAWN_COUNT: int = 5
+WAVE_SPAWN_COOLDOWN: int = 120
+WAVE_MAX_ENEMIES: int = 100
 
 
 # --- Knife ---
 
 KNIFE_SPEED: float = 300.0 / TICK_RATE
 KNIFE_DAMAGE: int = 25
-KNIFE_LIFETIME: int = 240
+KNIFE_LIFETIME: int = 1024
 KNIFE_RADIUS: float = 4.0
 KNIFE_DELAYED_TICKS: int = 512
 KNIFE_REFLECTIVE_BOUNCES: int = 3
@@ -88,6 +96,11 @@ HUD_BORDER_COLOR: tuple[int, int, int] = (200, 200, 200)
 # --- Background ---
 USE_BG_TILE: bool = True
 BG_TILE_PATH: str = "assets/bg_tile.png"
+
+# --- Audio ---
+USE_MUSIC: bool = True
+MUSIC_PATH: str = "assets/music.mp3"
+MUSIC_VOLUME: float = 0.5
 
 # --- Time ---
 

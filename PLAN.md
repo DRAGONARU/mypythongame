@@ -126,33 +126,30 @@ Rewind не удаляет старую timeline. Каждая entity имеет
 
 ## Дорожная карта до MVP для показа (актуальная, 2026-06-21)
 
-Фундамент (ECS, game loop, spatial hash) и базовый геймплей готов. Rewind готов.
+Фундамент (ECS, game loop, spatial hash), базовый геймплей, Rewind, TimeSystem,
+спрайты, HUD, музыка — готовы. 382 теста.
 Оставшиеся задачи по приоритету для закрытия MVP:
 
-1. **TimeSystem** (`src/systems/time_system.py`) — Фаза 2
-   - Time Stop (Space): всем кроме игрока `TimeAffected.scale=0`
-   - Slow (LShift): `scale=0.3` для врагов/ножей
-   - Drain TimeMana, режимы NORMAL/SLOW/TIME_STOP/REWINDING
-   - Запуск ДО MovementSystem
-2. **WaveSpawner** (`src/systems/spawner_system.py`)
+1. ~~**TimeSystem**~~ ✅ (Space=Time Stop, E=Slow, drain TimeMana, delayed-safe)
+2. ~~**Спрайты**~~ ✅ (SpriteSheet: много листов, разные размеры ячеек, поворот ножей)
+3. ~~**UI HUD**~~ ✅ (полоски HP/Mana/TimeMana в верхнем левом углу)
+4. ~~**Тайловый фон**~~ ✅ (кешированный `_bg`, fallback на fill)
+5. ~~**Музыка**~~ ✅ (pygame.mixer зацикленный трек, fallback)
+6. ~~**Враги атакуют игрока**~~ ✅ (контактный урон + DamageCooldown, смерть игрока)
+7. **WaveSpawner** (`src/systems/spawner_system.py`)
    - Бесконечный спавн волн по краям экрана, рост сложности со временем
    - Параметры в `config/config_params.py` (интервал, размер пачки, типы)
-3. **2 Spell Cards** (мана) — `src/systems/spell_card_system.py`
+8. **2 Spell Cards** (мана) — `src/systems/spell_card_system.py`
    - "Knives Around": спавн кольца ножей вокруг игрока
    - "Teleport": мгновенный перенос игрока на курсор
    - Клавиши Q/E (или иные), трата Mana, кулдаун
-4. **ProgressionSystem** (`src/systems/progression_system.py`)
+9. **ProgressionSystem** (`src/systems/progression_system.py`)
    - Враги при смерти дропают XP + мана (pickup или мгновенно)
    - Level-up при `current >= to_next` → пауза + draft 1-of-3
    - Upgrade registry: +урон ножа, +скорость атаки, +max HP, +скорость движения и т.д.
-5. **UI + спрайты** (`src/ui/`, `src/rendering/`)
-   - HUD: HP/Mana/TimeMana/уровень/режим времени
-   - Спрайты вместо кругов (Сакуя, враги, ножи, босс)
-   - Draft-оверлей при level-up
-6. **Музыка / звук** (`src/audio/`) — pygame.mixer, фоновая музыка + sfx
-7. **1 Босс** (`src/systems/boss_system.py` / компонент Boss)
-   - Фазы боя, спец-атаки (спавн проджектайлов, призыв миньонов)
-   - Спавн по таймеру/уровню — финал MVP-забега
+10. **1 Босс** (`src/systems/boss_system.py` / компонент Boss)
+    - Фазы боя, спец-атаки (спавн проджектайлов, призыв миньонов)
+    - Спавн по таймеру/уровню — финал MVP-забега
 8. **MVP для показа готов** 🎯
 
 ---

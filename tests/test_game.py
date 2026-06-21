@@ -30,7 +30,7 @@ def test_game_initializes_world(game):
 
 def test_game_initializes_systems(game):
     """Game creates all systems on init."""
-    assert len(game.systems) == 10
+    assert len(game.systems) == 12
 
 
 def test_game_initializes_loop(game):
