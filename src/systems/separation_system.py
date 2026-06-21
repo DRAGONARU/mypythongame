@@ -20,7 +20,7 @@ class SeparationSystem(System):
     (CombatSystem would otherwise waste cycles on enemy-enemy pairs).
     """
 
-    def __init__(self, cell_size: float = 10.0):
+    def __init__(self, cell_size: float = 20.0):
         """Initialise the separation grid.
 
         Args:
