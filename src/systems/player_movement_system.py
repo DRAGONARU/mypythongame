@@ -1,12 +1,13 @@
 from src.core.ecs.system import System
 from src.core.components import Position, Velocity, Player, InputState, TimeAffected
+from config.config_params import PLAYER_SPEED
 import pygame
 
 
 class PlayerMovementSystem(System):
-    """Moves the player based on keyboard input (WASD / arrow keys)."""
+    """Moves the player based on keyboard input (WASD)."""
 
-    PLAYER_SPEED: float = 250.0 / 120.0
+    PLAYER_SPEED: float = PLAYER_SPEED
 
     def update(self, world) -> None:
         input_state = self._get_input_state(world)

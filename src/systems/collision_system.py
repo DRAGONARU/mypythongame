@@ -2,10 +2,11 @@ from src.core.ecs.system import System
 from src.core.components import Position, Collider, CollisionFilter
 from src.utils.spatial_hash import SpatialHashGrid
 from src.core.events import CollisionEvent
+from config.config_params import COLLISION_CELL_SIZE
 
 class CollisionSystem(System):
     """System for collision detection"""
-    def __init__(self, cell_size: float = 20.0):
+    def __init__(self, cell_size: float = COLLISION_CELL_SIZE):
         self.grid = SpatialHashGrid(cell_size)
 
     def update(self, world) -> None:

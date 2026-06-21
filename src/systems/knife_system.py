@@ -1,18 +1,22 @@
 from src.core.ecs.system import System
 from src.core.components import Knife, Position, Owner, InputState, Delayed, Velocity, Collider, KnifeLoadout, Player, Lifetime, TimeAffected, CollisionFilter, Reflective, Enemy
 from src.core.components import LAYER_KNIFE, LAYER_ENEMY
+from config.config_params import (
+    KNIFE_SPEED, KNIFE_DAMAGE, KNIFE_LIFETIME, KNIFE_RADIUS,
+    KNIFE_DELAYED_TICKS, KNIFE_REFLECTIVE_BOUNCES, KNIFE_SPAWN_COOLDOWN,
+)
 import pygame
 
 class KnifeSystem(System):
     """Handles knife spawning, delayed activation, and reflective bouncing."""
 
-    KNIFE_SPEED = 300.0 / 120.0
-    KNIFE_DAMAGE = 25
-    KNIFE_LIFETIME = 240
-    KNIFE_RADIUS = 4.0
-    DELAYED_TICKS = 60
-    REFLECTIVE_BOUNCES = 3
-    SPAWN_COOLDOWN = 6 
+    KNIFE_SPEED = KNIFE_SPEED
+    KNIFE_DAMAGE = KNIFE_DAMAGE
+    KNIFE_LIFETIME = KNIFE_LIFETIME
+    KNIFE_RADIUS = KNIFE_RADIUS
+    DELAYED_TICKS = KNIFE_DELAYED_TICKS
+    REFLECTIVE_BOUNCES = KNIFE_REFLECTIVE_BOUNCES
+    SPAWN_COOLDOWN = KNIFE_SPAWN_COOLDOWN
 
     def update(self, world) -> None:
         input_state = self._get_input_state(world)

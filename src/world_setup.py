@@ -6,19 +6,22 @@ from src.core.components import (
     TimeAffected, Player, Enemy, KnifeLoadout, CollisionFilter,
     LAYER_PLAYER, LAYER_ENEMY, LAYER_KNIFE,
 )
+from config.config_params import (
+    PLAYER_RADIUS, PLAYER_HP, PLAYER_MANA, PLAYER_TIME_MANA, PLAYER_XP_TO_NEXT,
+    ENEMY_RADIUS, ENEMY_HP, SPAWN_RING_RADIUS,
+)
 
 class ArenaSetup:
     """Factory for creating the player and enemies in a World."""
 
-    PLAYER_RADIUS: float = 12.0
-    PLAYER_HP: int = 100
-    PLAYER_MANA: int = 100
-    PLAYER_TIME_MANA: int = 100
-    PLAYER_XP_TO_NEXT: int = 100
-    ENEMY_RADIUS: float = 10.0
-    ENEMY_HP: int = 50
-    ENEMY_SPEED: float = 5.0
-    SPAWN_RING_RADIUS: float = 200.0
+    PLAYER_RADIUS: float = PLAYER_RADIUS
+    PLAYER_HP: int = PLAYER_HP
+    PLAYER_MANA: int = PLAYER_MANA
+    PLAYER_TIME_MANA: int = PLAYER_TIME_MANA
+    PLAYER_XP_TO_NEXT: int = PLAYER_XP_TO_NEXT
+    ENEMY_RADIUS: float = ENEMY_RADIUS
+    ENEMY_HP: int = ENEMY_HP
+    SPAWN_RING_RADIUS: float = SPAWN_RING_RADIUS
 
     @staticmethod
     def setup(world: World, enemy_count: int = 10, center: tuple[float, float] = (400.0, 300.0)) -> None:

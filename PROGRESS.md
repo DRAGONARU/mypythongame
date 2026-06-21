@@ -114,7 +114,7 @@
 | `_tick(dt)` | ✅ Готов | Инкремент tick, запуск систем, очистка events, `_check_quit` (ESC/Q) |
 | `_render(alpha)` | ✅ Готов | Делегирует в Renderer.render(world, alpha) |
 | `run()` / `stop()` | ✅ Готов | Делегирует в GameLoop |
-| Порядок систем | ✅ | Input → PlayerMovement → Knife → Enemy → Movement → Collision → Combat → KnifeBounce → Lifetime |
+| Порядок систем | ✅ | Input → PlayerMovement → Knife → Enemy → Movement → Separation → Collision → Combat → KnifeBounce → Lifetime |
 | `main.py` | ✅ Готов | pygame.init → Game → ArenaSetup.setup → run → quit |
 
 ---
@@ -123,12 +123,13 @@
 
 | Компонент | Статус |
 |-----------|--------|
-| Event Log (с Undo) | ❌ |
-| Ring Buffer Snapshots | ❌ |
-| Rewind (reverse replay) | ❌ |
-| Selective Rewind + TimelineLayer | ❌ |
-| Time Domains (local_time_scale) | ❌ |
-| Time Bubble | ❌ |
+| Event Log (с Undo) | ✅ Готов (EventLog, 28 тестов) |
+| Ring Buffer Snapshots | ✅ Готов (SnapshotBuffer, 24 теста) |
+| Rewind (reverse replay) | ✅ Готов (RewindSystem, 14 тестов) |
+| World hooks (record_*) | ✅ Готов (create/destroy/add/remove + `_undoing` флаг) |
+| TimeSystem (local_time_scale, Time Stop, Slow) | ❌ |
+| Selective Rewind + TimelineLayer | ❌ (вне MVP) |
+| Time Bubble | ❌ (вне MVP) |
 
 ## Фаза 3 — Геймплей
 
@@ -136,9 +137,10 @@
 |-----------|--------|
 | Knife System (3 типа MVP + 4 доп.) | ✅ 3 типа MVP: Normal, Delayed, Reflective |
 | Knife Bounce (отдельная система) | ✅ Готов (после Collision+Combat) |
-| Spell Cards (event-driven, мана) | ❌ |
-| Способности времени (мана времени) | ❌ |
+| Spell Cards (event-driven, мана) | ❌ 2 карты: knives-around + teleport-to-cursor |
+| Способности времени (мана времени) | ❌ (TimeSystem) |
 | Enemy System | ✅ Готов (преследование + смерть) |
+| SeparationSystem (анти-стак) | ✅ Готов (отталкивание врагов) |
 | Collision System | ✅ Готов | broad+narrow + CollisionFilter (битовые слои) + CollisionEvent |
 | Player (Сакуя: HP + Mana + TimeMana + Experience) | ✅ Готов (спавн в ArenaSetup) |
 | Player Movement (WASD) | ✅ Готов |
@@ -146,7 +148,12 @@
 | Рендеринг | ✅ Готов | Renderer: круги (player/enemy/knife) + HP-бар врагов |
 | Спавн арены | ✅ Готов | `src/world_setup.py` ArenaSetup.setup |
 | Точка входа | ✅ Готов | `main.py` |
-| Roguelike прогрессия (опыт, уровни, драфт) | ❌ |
+| WaveSpawner (бесконечный спавн) | ❌ настраиваемый в config |
+| Roguelike прогрессия (опыт, уровни, драфт) | ❌ XP-капли + draft 1-of-3 |
+| UI (HUD: HP/Mana/TimeMana, спрайты) | ❌ |
+| Спрайты объектов | ❌ |
+| Музыка / звук | ❌ |
+| Босс (1 шт.) | ❌ финал MVP |
 
 ## Фаза 4 — Продвинутые механики
 
@@ -156,6 +163,7 @@
 | Persistent Snapshots | ❌ |
 | Sweep & Prune | ❌ |
 | Timeline Fracture | ❌ (вне MVP) |
+| Centralised config | ✅ Готов (`config/config_params.py`) |
 
 ---
 

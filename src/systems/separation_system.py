@@ -1,6 +1,7 @@
 from src.core.ecs.system import System
 from src.core.components import Position, Collider, Enemy, TimeAffected
 from src.utils.spatial_hash import SpatialHashGrid
+from config.config_params import SEPARATION_CELL_SIZE
 
 
 class SeparationSystem(System):
@@ -20,7 +21,7 @@ class SeparationSystem(System):
     (CombatSystem would otherwise waste cycles on enemy-enemy pairs).
     """
 
-    def __init__(self, cell_size: float = 20.0):
+    def __init__(self, cell_size: float = SEPARATION_CELL_SIZE):
         """Initialise the separation grid.
 
         Args:

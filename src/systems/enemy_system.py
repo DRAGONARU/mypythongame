@@ -1,10 +1,11 @@
 from src.core.ecs.system import System
 from src.core.components import Position, Velocity, Enemy, Health, Player
+from config.config_params import ENEMY_SPEED
 
 class EnemySystem(System):
     """Handles enemy AI: movement towards the player."""
 
-    ENEMY_SPEED = 100.0 / 120.0
+    ENEMY_SPEED = ENEMY_SPEED
 
     def update(self, world) -> None:
         self._move_enemies(world)

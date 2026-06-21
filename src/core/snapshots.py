@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from src.core.ecs.entity import Entity
 from src.core.ecs.world import World
 from src.core.ecs.sparse_set import SparseSet
+from config.config_params import SNAPSHOT_CAPACITY
 import copy
 
 
@@ -58,7 +59,7 @@ class SnapshotBuffer:
         capacity: Max number of ticks stored (e.g. 240 = 2 seconds at 120Hz).
     """
 
-    def __init__(self, capacity: int = 240):
+    def __init__(self, capacity: int = SNAPSHOT_CAPACITY):
         self.capacity = capacity
         self._buffer: list[WorldSnapshot | None] = [None] * capacity
         self._head: int = 0

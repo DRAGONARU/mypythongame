@@ -1,6 +1,11 @@
 import pygame
 from src.core.ecs.world import World
 from src.core.components import Position, Collider, Player, Enemy, Knife, Health
+from config.config_params import (
+    SCREEN_SIZE, WINDOW_TITLE,
+    BG_COLOR, PLAYER_COLOR, ENEMY_COLOR, KNIFE_COLOR,
+    HEALTH_BAR_BG, HEALTH_BAR_FG,
+)
 
 class Renderer:
     """Pygame renderer drawing entities as colored circles.
@@ -10,14 +15,14 @@ class Renderer:
     Game._render with interpolation alpha.
     """
 
-    BG_COLOR: tuple[int, int, int] = (20, 20, 30)
-    PLAYER_COLOR: tuple[int, int, int] = (80, 150, 255)
-    ENEMY_COLOR: tuple[int, int, int] = (220, 60, 60)
-    KNIFE_COLOR: tuple[int, int, int] = (240, 240, 240)
-    HEALTH_BAR_BG: tuple[int, int, int] = (60, 0, 0)
-    HEALTH_BAR_FG: tuple[int, int, int] = (0, 200, 0)
+    BG_COLOR: tuple[int, int, int] = BG_COLOR
+    PLAYER_COLOR: tuple[int, int, int] = PLAYER_COLOR
+    ENEMY_COLOR: tuple[int, int, int] = ENEMY_COLOR
+    KNIFE_COLOR: tuple[int, int, int] = KNIFE_COLOR
+    HEALTH_BAR_BG: tuple[int, int, int] = HEALTH_BAR_BG
+    HEALTH_BAR_FG: tuple[int, int, int] = HEALTH_BAR_FG
 
-    def __init__(self, screen_size: tuple[int, int] = (800, 600), title: str = "Luna Dial Survivors"):
+    def __init__(self, screen_size: tuple[int, int] = SCREEN_SIZE, title: str = WINDOW_TITLE):
         self.screen = pygame.display.set_mode(screen_size)
         pygame.display.set_caption(title)
         self.screen_size = screen_size

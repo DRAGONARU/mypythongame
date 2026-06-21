@@ -1,12 +1,13 @@
 import pygame
 from src.core.game import Game
 from src.world_setup import ArenaSetup
+from config.config_params import SCREEN_SIZE, ARENA_ENEMY_COUNT
 
 def main() -> None:
     """Entry point: initialise pygame, create game, populate arena, run."""
     pygame.init()
-    game = Game(screen_size=(800, 600))
-    ArenaSetup.setup(game.world, enemy_count=1000)
+    game = Game(screen_size=SCREEN_SIZE)
+    ArenaSetup.setup(game.world, enemy_count=ARENA_ENEMY_COUNT)
     game.run()
     pygame.quit()
 

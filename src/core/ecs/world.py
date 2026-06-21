@@ -2,6 +2,7 @@ from typing import TypeVar
 from .sparse_set import SparseSet
 from .entity import Entity
 from .query import Query
+import copy
 
 T = TypeVar('T')
 
@@ -30,6 +31,7 @@ class World:
         self._alive: int = 0
         self.tick: int = 0
         self.events: list = []
+        self.event_log = None
 
     def _is_alive(self, entity: Entity) -> bool:
         """Return True if the entity's generation matches the current World generation.
@@ -60,7 +62,10 @@ class World:
                 self._generations.append(0)
         gen = self._generations[eid]
         self._alive += 1
-        return Entity(id=eid, generation=gen)
+        entity = Entity(id=eid, generation=gen)
+        if self.event_log is not None and not self.event_log._undoing:
+            self.event_log.record_created(entity)
+        return entity
 
     def destroy_entity(self, entity: Entity) -> bool:
         """Destroy an entity, removing all its components.
@@ -78,6 +83,14 @@ class World:
 
         if eid >= len(self._generations) or self._generations[eid] != gen:
             return False
+
+        if self.event_log is not None and not self.event_log._undoing:
+            comps = {}
+            for comp_type, sparse_set in self._components.items():
+                comp = sparse_set.get(entity)
+                if comp is not None:
+                    comps[comp_type] = copy.copy(comp)
+            self.event_log.record_destroyed(entity, comps)
 
         for sparse_set in self._components.values():
             sparse_set.remove(entity)
@@ -100,8 +113,13 @@ class World:
         """
         if not self._is_alive(entity):
             return False
-        
+
         component_type = type(value)
+        existing = None
+        if self.event_log is not None and not self.event_log._undoing:
+            existing = self.get_component(entity, component_type)
+            if existing is None:
+                self.event_log.record_added(entity, component_type)
         if component_type not in self._components:
             self._components[component_type] = SparseSet()
         return self._components[component_type].insert(entity, value)
@@ -136,6 +154,10 @@ class World:
         sparse_set = self._components.get(component_type)
         if sparse_set is None:
             return False
+        if self.event_log is not None and not self.event_log._undoing:
+            existing = sparse_set.get(entity)
+            if existing is not None:
+                self.event_log.record_removed(entity, component_type, copy.copy(existing))
         return sparse_set.remove(entity)
 
     def query(self, *component_types: type) -> Query:

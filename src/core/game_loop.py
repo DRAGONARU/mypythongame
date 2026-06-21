@@ -1,27 +1,23 @@
 from typing import Callable
 import time
 import pygame
+from config.config_params import FIXED_DT, MAX_TICKS_PER_FRAME
 
 
 class GameLoop:
     """Fixed-timestep game loop with accumulator pattern.
 
-    Runs logic at a constant 120 Hz tick rate regardless of frame rate.
+    Runs logic at a constant tick rate regardless of frame rate.
     Accumulates real elapsed time and consumes it in FIXED_DT chunks.
     If the accumulator grows too large (spiral of death), it is reset
     after MAX_TICKS_PER_FRAME ticks in a single frame.
 
     Rendering receives an interpolation alpha [0, 1) for smooth visual
     positioning between logic ticks.
-
-    Attributes:
-        FIXED_DT: Duration of one logic tick in seconds (1/120).
-        MAX_TICKS_PER_FRAME: Maximum ticks processed per frame to guard
-            against spiral of death.
     """
 
-    FIXED_DT: float = 1.0 / 120.0
-    MAX_TICKS_PER_FRAME: int = 5
+    FIXED_DT: float = FIXED_DT
+    MAX_TICKS_PER_FRAME: int = MAX_TICKS_PER_FRAME
 
     def __init__(
             self,
