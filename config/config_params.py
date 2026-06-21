@@ -8,7 +8,7 @@ values instead of hardcoding their own.
 
 # --- Tick simulation ---
 
-TICK_RATE: int = 60
+TICK_RATE: int = 120
 FIXED_DT: float = 1.0 / TICK_RATE
 MAX_TICKS_PER_FRAME: int = 5
 
@@ -36,8 +36,10 @@ PLAYER_XP_TO_NEXT: int = 100
 ENEMY_SPEED: float = 100.0 / TICK_RATE
 ENEMY_RADIUS: float = 10.0
 ENEMY_HP: int = 50
+ENEMY_CONTACT_DAMAGE: int = 10
+ENEMY_HIT_COOLDOWN: int = 30
 SPAWN_RING_RADIUS: float = 200.0
-ARENA_ENEMY_COUNT: int = 120
+ARENA_ENEMY_COUNT: int = 100
 
 
 # --- Knife ---
@@ -46,7 +48,7 @@ KNIFE_SPEED: float = 300.0 / TICK_RATE
 KNIFE_DAMAGE: int = 25
 KNIFE_LIFETIME: int = 240
 KNIFE_RADIUS: float = 4.0
-KNIFE_DELAYED_TICKS: int = 60
+KNIFE_DELAYED_TICKS: int = 512
 KNIFE_REFLECTIVE_BOUNCES: int = 3
 KNIFE_SPAWN_COOLDOWN: int = 6
 
@@ -71,6 +73,22 @@ KNIFE_COLOR: tuple[int, int, int] = (240, 240, 240)
 HEALTH_BAR_BG: tuple[int, int, int] = (60, 0, 0)
 HEALTH_BAR_FG: tuple[int, int, int] = (0, 200, 0)
 
+# --- HUD ---
+HUD_BAR_WIDTH: int = 200
+HUD_BAR_HEIGHT: int = 16
+HUD_BAR_GAP: int = 6
+HUD_MARGIN_X: int = 12
+HUD_MARGIN_Y: int = 12
+HUD_HP_COLOR: tuple[int, int, int] = (200, 40, 40)
+HUD_MANA_COLOR: tuple[int, int, int] = (60, 120, 230)
+HUD_TIMEMANA_COLOR: tuple[int, int, int] = (160, 90, 230)
+HUD_BG_COLOR: tuple[int, int, int] = (40, 40, 50)
+HUD_BORDER_COLOR: tuple[int, int, int] = (200, 200, 200)
+
+# --- Background ---
+USE_BG_TILE: bool = True
+BG_TILE_PATH: str = "assets/bg_tile.png"
+
 # --- Time ---
 
 NORMAL = "normal"
@@ -81,3 +99,19 @@ REWIND = "rewind"
 SLOW_SCALE: float = 0.3
 TIME_STOP_DRAIN: int = 2
 SLOW_DRAIN: int = 1
+
+# --- Sprite sheet ---
+USE_SPRITES: bool = True
+SPRITE_COLOR_KEY: tuple[int, int, int] | None = None
+SPRITE_SHEETS: dict[str, tuple[str, tuple[int, int, int] | None]] = {
+    "main": ("assets/sheet.png", SPRITE_COLOR_KEY),
+    "enemy": ("assets/enemy_sprites.png", SPRITE_COLOR_KEY),
+}
+
+# Each sprite: (sheet_name, x, y, w, h) in pixels on that sheet.
+SPRITE_PLAYER: tuple[str, int, int, int, int] = ("main", 0, 0, 32, 50)
+SPRITE_KNIFE: tuple[str, int, int, int, int] = ("main", 0, 150, 30, 10)
+SPRITE_ENEMY: tuple[str, int, int, int, int] = ("enemy", 0, 352, 30, 30)
+
+USE_BG_TILE: bool = True
+BG_TILE_PATH: str = "assets/2160.png"

@@ -4,7 +4,7 @@ from src.core.game_loop import GameLoop
 from src.rendering.render import Renderer
 from src.core.event_log import EventLog
 from src.core.snapshots import SnapshotBuffer
-from src.core.components import InputState, Player, TimeMana
+from src.core.components import InputState, Player, TimeMana, Health
 from config.config_params import SCREEN_SIZE, REWIND_CAPACITY_TICKS, SNAPSHOT_CAPACITY
 import pygame
 
@@ -47,6 +47,14 @@ class Game:
         self.world.events.clear()
         self.snapshot_buffer.capture(self.world)
         self._check_quit()
+        self._check_player_death()
+
+    def _check_player_death(self) -> None:
+        """Stop the loop if the player's Health reaches zero."""
+        for entity, player, health in self.world.query(Player, Health):
+            if health.value <= 0:
+                self.loop.stop()
+            break
 
     def _check_quit(self) -> None:
         """Stop the loop if ESC or Q is pressed."""
@@ -91,8 +99,8 @@ class Game:
             self.rewind_system.stop()
 
         if self.rewind_system.active:
-            self.rewind_system.update(self.world)
-            return True
+            rewound = self.rewind_system.update(self.world)
+            return rewound
         return False
 
     @staticmethod

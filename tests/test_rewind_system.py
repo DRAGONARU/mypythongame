@@ -204,3 +204,52 @@ def test_no_event_log_stops(system, world):
     system.start()
     system.update(world)
     assert system.active is False
+
+
+# --- regression: mana drains during rewind ---
+
+
+def test_mana_accumulates_drain_across_undoes(system, log, world):
+    """Rewind drain is not reverted by undo (TimeMana excluded from capture).
+
+    Regression: TimeMana was captured as a field event, so each undo
+    restored it to its pre-tick value, wiping the previous drain.
+    """
+    _bind(world, log)
+    e = _add_player(world, mana=100)
+
+    for t in range(1, 4):
+        _simulate_tick(world, log, t)
+
+    system.start()
+    for _ in range(3):
+        system.update(world)
+
+    # 3 drains of DRAIN_PER_TICK each, not reverted
+    assert world.get_component(e, TimeMana).value == 100 - 3 * system.DRAIN_PER_TICK
+
+
+def test_update_returns_true_on_success(system, log, world):
+    _bind(world, log)
+    _add_player(world)
+    _simulate_tick(world, log, 1)
+
+    system.start()
+    assert system.update(world) is True
+
+
+def test_update_returns_false_when_log_empty(system, log, world):
+    _bind(world, log)
+    _add_player(world)
+
+    system.start()
+    assert system.update(world) is False
+    assert system.active is False
+
+
+def test_update_returns_false_when_inactive(system, log, world):
+    _bind(world, log)
+    _add_player(world)
+    _simulate_tick(world, log, 1)
+
+    assert system.update(world) is False

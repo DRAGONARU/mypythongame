@@ -101,6 +101,11 @@ class Enemy:
     ai_state: str = "idle"
 
 @dataclass(slots=True)
+class DamageCooldown:
+    """Ticks until the entity can take contact damage again."""
+    remaining_ticks: int
+
+@dataclass(slots=True)
 class InputState:
     mouse_x: float = 0.0
     mouse_y: float = 0.0

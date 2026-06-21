@@ -1,7 +1,8 @@
 from src.core.game import Game
 from src.core.ecs.entity import Entity
-from src.core.components import Position, Velocity, TimeAffected, Collider, Knife, Health, Lifetime
+from src.core.components import Position, Velocity, TimeAffected, Collider, Knife, Health, Lifetime, TimeMana, Player
 from src.core.events import CollisionEvent
+import pygame
 import pytest
 
 
@@ -14,6 +15,9 @@ def game(monkeypatch):
             monkeypatch.setattr(system, '_get_mouse_pos', lambda: (0, 0))
             monkeypatch.setattr(system, '_get_mouse_pressed', lambda: (False, False, False))
             monkeypatch.setattr(system, '_get_keys_pressed', lambda: ())
+    monkeypatch.setattr(g.input_system, '_get_mouse_pos', lambda: (0, 0))
+    monkeypatch.setattr(g.input_system, '_get_mouse_pressed', lambda: (False, False, False))
+    monkeypatch.setattr(g.input_system, '_get_keys_pressed', lambda: ())
     return g
 
 
@@ -107,3 +111,55 @@ def test_game_stop_sets_running_false(game):
     """stop() signals the loop to exit."""
     game.stop()
     assert game.loop._running is False
+
+
+def test_game_rewind_drains_time_mana(game, monkeypatch):
+    """Rewind drains TimeMana and the drain is not reverted by undo."""
+    p = game.world.create_entity()
+    game.world.add_component(p, Position(x=0.0, y=0.0))
+    game.world.add_component(p, Velocity(x=0.0, y=0.0))
+    game.world.add_component(p, TimeAffected(scale=1.0))
+    game.world.add_component(p, Health(value=100, max_value=100))
+    game.world.add_component(p, TimeMana(value=100, max_value=100))
+    game.world.add_component(p, Player())
+
+    keys = [False] * 512
+    keys[pygame.K_r] = True
+    monkeypatch.setattr(game.input_system, '_get_keys_pressed', lambda: tuple(keys))
+
+    game._tick(0.008)
+    game._tick(0.008)
+
+    game._tick(0.008)
+
+    assert game.world.get_component(p, TimeMana).value < 100
+
+
+def test_game_rewind_no_stasis_when_log_empty(game, monkeypatch):
+    """When rewind log runs out, _tick resumes normal pipeline (no stasis).
+
+    Regression: _rewind() returned True even when undo failed,
+    skipping the normal pipeline forever and freezing the world.
+    """
+    p = game.world.create_entity()
+    game.world.add_component(p, Position(x=0.0, y=0.0))
+    game.world.add_component(p, Velocity(x=0.0, y=0.0))
+    game.world.add_component(p, TimeAffected(scale=1.0))
+    game.world.add_component(p, Health(value=100, max_value=100))
+    game.world.add_component(p, TimeMana(value=100, max_value=100))
+    game.world.add_component(p, Player())
+
+    empty_keys = [False] * 512
+    r_keys = [False] * 512
+    r_keys[pygame.K_r] = True
+
+    monkeypatch.setattr(game.input_system, '_get_keys_pressed', lambda: tuple(empty_keys))
+    game._tick(0.008)
+    assert game.world.tick == 1
+
+    monkeypatch.setattr(game.input_system, '_get_keys_pressed', lambda: tuple(r_keys))
+    game._tick(0.008)
+    assert game.world.tick == 0
+
+    game._tick(0.008)
+    assert game.world.tick == 1

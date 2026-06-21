@@ -23,9 +23,10 @@ class RewindSystem(System):
         self.active: bool = False
         self.ticks_rewound: int = 0
 
-    def update(self, world) -> None:
+    def update(self, world) -> bool:
+        """Undo one tick if possible. Returns True if a tick was undone."""
         if not self.active:
-            return
+            return False
 
         player_entity = None
         for entity, pl, t_mana in world.query(Player, TimeMana):
@@ -34,33 +35,34 @@ class RewindSystem(System):
 
         if player_entity is None:
             self.stop()
-            return
+            return False
 
         time_mana = world.get_component(player_entity, TimeMana)
         if time_mana is None:
             self.stop()
-            return
+            return False
 
         if time_mana.value < self.DRAIN_PER_TICK:
             self.stop()
-            return
+            return False
 
         if self.ticks_rewound >= self.MAX_REWIND_TICKS:
             self.stop()
-            return
+            return False
 
         if world.event_log is None or world.event_log.latest_tick() is None:
             self.stop()
-            return
+            return False
 
         success = world.event_log.undo_latest_tick(world)
         if not success:
             self.stop()
-            return
+            return False
 
         time_mana = world.get_component(player_entity, TimeMana)
         time_mana.value -= self.DRAIN_PER_TICK
         self.ticks_rewound += 1
+        return True
 
     def start(self) -> None:
         self.active = True

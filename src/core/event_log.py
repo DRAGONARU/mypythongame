@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from src.core.ecs.entity import Entity
 from src.core.ecs.world import World
+from src.core.components import TimeMana, Mana
 from config.config_params import REWIND_CAPACITY_TICKS
 import copy
 
@@ -54,23 +55,33 @@ class EventLog:
             old_tick = self._tick_order.pop(0)
             self._events.pop(old_tick, None)
 
+    # Resource pools that represent a cost, not rewound state.
+    # Excluding them from capture means undo leaves them untouched,
+    # so drains from RewindSystem/TimeSystem accumulate correctly
+    # instead of being reverted to their pre-tick value each undo.
+    _NON_REWOUND_TYPES = (TimeMana, Mana)
+
     def capture_fields(self, world: World) -> None:
         """Record pre-tick copies of every live component as 'field' events.
 
         Must be called AFTER begin_tick and BEFORE systems run. Each
         component is shallow-copied so later in-place mutations can
-        be reverted by overwriting with the pre-tick copy.
+        be reverted by overwriting with the pre-tick copy. Resource
+        pools (TimeMana, Mana) are excluded so their drains persist
+        across undo.
         """
         if self._current_tick is None:
             return
         bucket = self._events[self._current_tick]
-        for sparse_set in world._components.values():
+        for comp_type, sparse_set in world._components.items():
+            if comp_type in self._NON_REWOUND_TYPES:
+                continue
             for entity, comp in sparse_set.iter_with_entities():
                 bucket.append(UndoEvent(
                     kind="field",
                     entity_id=entity.id,
                     entity_gen=entity.generation,
-                    component_type=type(comp),
+                    component_type=comp_type,
                     old_value=copy.copy(comp),
                 ))
 
