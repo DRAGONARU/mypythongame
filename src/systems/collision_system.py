@@ -5,7 +5,7 @@ from src.core.events import CollisionEvent
 
 class CollisionSystem(System):
     """System for collision detection"""
-    def __init__(self, cell_size: float = 64.0):
+    def __init__(self, cell_size: float = 10.0):
         self.grid = SpatialHashGrid(cell_size)
 
     def update(self, world) -> None:

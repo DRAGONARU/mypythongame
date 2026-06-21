@@ -45,16 +45,18 @@ class Renderer:
     def _draw_enemies(self, world: World) -> None:
         """Draw enemies as red circles with health bars."""
         for entity, enemy, pos, col, health in world.query(Enemy, Position, Collider, Health):
+            DRAW_WITH_BAR = False
             pygame.draw.circle(self.screen, self.ENEMY_COLOR,
                             (int(pos.x), int(pos.y)), int(col.radius))
-            bar_w = int(col.radius * 2)
-            bar_h = 4
-            bx = int(pos.x - col.radius)
-            by = int(pos.y - col.radius - 8)
-            pygame.draw.rect(self.screen, self.HEALTH_BAR_BG, (bx, by, bar_w, bar_h))
-            ratio = max(0.0, health.value / health.max_value)
-            pygame.draw.rect(self.screen, self.HEALTH_BAR_FG,
-                            (bx, by, int(bar_w * ratio), bar_h))
+            if DRAW_WITH_BAR:
+                bar_w = int(col.radius * 2)
+                bar_h = 4
+                bx = int(pos.x - col.radius)
+                by = int(pos.y - col.radius - 8)
+                pygame.draw.rect(self.screen, self.HEALTH_BAR_BG, (bx, by, bar_w, bar_h))
+                ratio = max(0.0, health.value / health.max_value)
+                pygame.draw.rect(self.screen, self.HEALTH_BAR_FG,
+                                (bx, by, int(bar_w * ratio), bar_h))
 
     def _draw_knives(self, world: World) -> None:
         """Draw knives as small white circles."""

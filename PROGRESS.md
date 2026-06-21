@@ -135,13 +135,17 @@
 | Компонент | Статус |
 |-----------|--------|
 | Knife System (3 типа MVP + 4 доп.) | ✅ 3 типа MVP: Normal, Delayed, Reflective |
+| Knife Bounce (отдельная система) | ✅ Готов (после Collision+Combat) |
 | Spell Cards (event-driven, мана) | ❌ |
 | Способности времени (мана времени) | ❌ |
-| Enemy System | ❌ |
+| Enemy System | ✅ Готов (преследование + смерть) |
 | Collision System | ✅ Готов | broad+narrow + CollisionFilter (битовые слои) + CollisionEvent |
-| Player (Сакуя: HP + Mana + TimeMana + Experience) | ⚠️ Компоненты готовы, нет спавна |
+| Player (Сакуя: HP + Mana + TimeMana + Experience) | ✅ Готов (спавн в ArenaSetup) |
+| Player Movement (WASD) | ✅ Готов |
 | Ввод / Управление | ✅ Готов | InputSystem: mouse + keyboard → InputState компонент |
-| Рендеринг | ❌ |
+| Рендеринг | ✅ Готов | Renderer: круги (player/enemy/knife) + HP-бар врагов |
+| Спавн арены | ✅ Готов | `src/world_setup.py` ArenaSetup.setup |
+| Точка входа | ✅ Готов | `main.py` |
 | Roguelike прогрессия (опыт, уровни, драфт) | ❌ |
 
 ## Фаза 4 — Продвинутые механики
@@ -157,15 +161,21 @@
 
 ## Проблемы, требующие внимания
 
-1. **Нет тестов** — ✅ исправлено (230 тестов)
+1. **Нет тестов** — ✅ исправлено (262 теста)
 2. **`game_loop.py` пустой** — ✅ исправлено
 3. **`spatial_hash.py` пустой** — ✅ исправлено
 4. **Docstring-несогласованность** — ✅ исправлено
 5. **`__init__.py` в utils** — ✅ исправлено (SpatialHashGrid экспортирован)
 6. **`CollisionSystem._handle_collision`** — ✅ исправлено (генерирует CollisionEvent)
 7. **`World._is_alive` приватный** — тесты используют приватный API
-8. **`Game._render` — заглушка** — нет рендеринга
-9. **Нет спавна игрока/врагов** — компоненты готовы, нет setup-функции
+8. **`Game._render` — заглушка** — ✅ исправлено (Renderer)
+9. **Нет спавна игрока/врагов** — ✅ исправлено (ArenaSetup)
+10. **`mouse._get_mouse_pos()`** — ✅ исправлено (`mouse.get_pos()`)
+11. **KnifeSystem не спавнил ножи** (query KnifeLoadout+InputState на одной сущности) — ✅ исправлено (InputState ищется отдельно)
+12. **GameLoop не обрабатывал pygame events** — ✅ исправлено (`pygame.event.pump()`)
+13. **Скорости в px/сек применялись per-tick (120× быстрее)** — ✅ исправлено (делим на 120)
+14. **Игрок не двигался (нет системы чтения WASD)** — ✅ исправлено (PlayerMovementSystem)
+15. **Reflective ножи не отбивались (bounce читал пустые events)** — ✅ исправлено (KnifeBounceSystem после Combat)
 
 ---
 
@@ -190,9 +200,16 @@
 17. ~~Реализовать CollisionSystem~~ ✅ (11 тестов)
 18. ~~Реализовать LifetimeSystem~~ ✅ (8 тестов)
 19. ~~Реализовать CombatSystem~~ ✅ (10 тестов)
-20. ~~Реализовать KnifeSystem~~ ✅ (27 тестов, 3 типа ножей)
+20. ~~Реализовать KnifeSystem~~ ✅ (30 тестов, 3 типа ножей)
 21. ~~Реализовать Game~~ ✅ (10 тестов)
-22. Реализовать базовый рендеринг (Pygame: круги для Position + Collider)
-23. Реализовать спавн игрока и врагов (тестовая арена)
-24. Реализовать EnemySystem (ИИ: преследование игрока)
-25. Реализовать TimeSystem (local_time_scale, Time Stop, Slow)
+22. ~~Реализовать EnemySystem~~ ✅ (16 тестов, преследование + смерть)
+23. ~~Реализовать базовый рендеринг~~ ✅ (Renderer: круги + HP-бар)
+24. ~~Реализовать спавн игрока и врагов~~ ✅ (ArenaSetup.setup)
+25. ~~Реализовать PlayerMovementSystem (WASD)~~ ✅ (13 тестов)
+26. ~~Реализовать KnifeBounceSystem~~ ✅ (отражение после Collision+Combat)
+27. ~~Точка входа `main.py`~~ ✅
+28. **MVP playable-прототип готов** ✅ (запускается, геймплей работает)
+29. Реализовать Roguelike прогрессию (XP-капли, уровень, драфт 1-of-3)
+30. Реализовать спавн волн врагов (WaveSpawner)
+31. Реализовать TimeSystem (local_time_scale, Time Stop, Slow)
+32. Реализовать Event Log с Undo + Ring Buffer Snapshots + Rewind (Фаза 2)

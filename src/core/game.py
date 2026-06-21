@@ -1,5 +1,5 @@
 from src.core.ecs.world import World
-from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem, KnifeSystem, KnifeBounceSystem, EnemySystem, PlayerMovementSystem
+from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem, KnifeSystem, KnifeBounceSystem, EnemySystem, PlayerMovementSystem, SeparationSystem
 from src.core.game_loop import GameLoop
 from src.rendering.render import Renderer
 import pygame
@@ -16,6 +16,7 @@ class Game:
             KnifeSystem(),
             EnemySystem(),
             MovementSystem(),
+            SeparationSystem(),
             CollisionSystem(),
             CombatSystem(),
             KnifeBounceSystem(),

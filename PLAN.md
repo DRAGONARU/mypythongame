@@ -197,7 +197,7 @@ Sparse set даёт: cache locality, O(1) add/remove.
 |----------|------------|
 | Normal Knife | Position, Velocity, Collider, Knife(normal), Lifetime, Owner, TimeAffected, CollisionFilter, Sprite |
 | Delayed Knife | Position, Velocity(scale=0), Collider, Knife(delayed), Delayed, Lifetime, Owner, TimeAffected, CollisionFilter, Sprite |
-| Reflective Knife | Position, Velocity, Collider, Knife(reflective), Reflective, Lifetime, Owner, TimeAffected, CollisionFilter, Sprite |
+| Reflective Knife | Position, Velocity, Collider, Knife(reflective), Reflective, Lifetime, Owner, TimeAffected, CollisionFilter, Sprite — отражение обрабатывает KnifeBounceSystem (после Collision+Combat) |
 | Orbiting Knife | Position, Knife(orbiting), Orbiting, Collider, Owner, TimeAffected, TimelineAnchor, Sprite |
 | Piercing Knife | Position, Velocity, Collider, Knife(piercing), Piercing, Lifetime, Owner, TimeAffected, TimelineAnchor, Sprite |
 | TimeAnchored Knife | Position, Velocity, Collider, Knife(time_anchored), TimeAnchored, Lifetime, Owner, Sprite |
