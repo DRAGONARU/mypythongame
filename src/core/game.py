@@ -1,5 +1,5 @@
 from src.core.ecs.world import World
-from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem, KnifeSystem, KnifeBounceSystem, EnemySystem, PlayerMovementSystem, SeparationSystem, RewindSystem, TimeSystem, PlayerGainSystem, WaveSpawner
+from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem, KnifeSystem, KnifeBounceSystem, EnemySystem, PlayerMovementSystem, SeparationSystem, RewindSystem, TimeSystem, PlayerGainSystem, WaveSpawner, SpellCardSystem, ProgressionSystem, BossSystem
 from src.core.game_loop import GameLoop
 from src.rendering.render import Renderer
 from src.core.event_log import EventLog
@@ -16,12 +16,16 @@ class Game:
         self.input_system = InputSystem()
         self.time_system = TimeSystem()
         self.wave_spawner = WaveSpawner(screen_size)
+        self.boss_system = BossSystem(self.wave_spawner, self.time_system, screen_size)
         self.victory: bool = False
         self.systems = [
             self.input_system,
             PlayerMovementSystem(),
             KnifeSystem(),
+            SpellCardSystem(),
+            ProgressionSystem(),
             EnemySystem(),
+            self.boss_system,
             MovementSystem(),
             SeparationSystem(),
             CollisionSystem(),
@@ -75,8 +79,10 @@ class Game:
             break
 
     def _check_victory(self) -> None:
-        """Stop the loop once all waves are spawned and cleared."""
+        """Stop the loop once all waves, the boss included, are cleared."""
         if not self.wave_spawner.all_spawned:
+            return
+        if not self.boss_system.boss_spawned:
             return
         for entity, enemy in self.world.query(Enemy):
             return
@@ -93,7 +99,19 @@ class Game:
             self.loop.stop()
 
     def _render(self, alpha: float) -> None:
-        self._renderer.render(self.world, alpha)
+        wave_progress = self._wave_progress()
+        self._renderer.render(self.world, alpha, wave_progress)
+
+    def _wave_progress(self) -> float:
+        """Return the fraction of the wave cleared [0, 1]."""
+        max_enemies = self.wave_spawner._max_enemies
+        if max_enemies <= 0:
+            return 0.0
+        alive = 0
+        for entity, enemy in self.world.query(Enemy):
+            alive += 1
+        killed = self.wave_spawner.total_spawned - alive
+        return max(0.0, killed / max_enemies)
 
     def run(self) -> None:
         self.loop.start()

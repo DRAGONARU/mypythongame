@@ -6,6 +6,7 @@ from src.core.components import (
 )
 from src.core.events import CollisionEvent
 from src.core.ecs.world import World
+from config.config_params import KNIFE_REFLECTIVE_BOUNCES
 import pygame
 import pytest
 
@@ -50,7 +51,7 @@ def _add_player(world, x=0.0, y=0.0, current="normal", cooldown=0, keys=None):
     e = world.create_entity()
     world.add_component(e, Player())
     world.add_component(e, Position(x=x, y=y))
-    world.add_component(e, KnifeLoadout(current=current, cooldown=cooldown))
+    world.add_component(e, KnifeLoadout(current=current, cooldown=cooldown, reflective_bounces=KNIFE_REFLECTIVE_BOUNCES))
     world.add_component(e, InputState(keys_pressed=keys))
     return e
 
@@ -242,7 +243,7 @@ def test_spawn_reflective_has_bounces(system, world):
     for entity, knife in world.query(Knife):
         reflective = world.get_component(entity, Reflective)
         assert reflective is not None
-        assert reflective.bounces_remaining == KnifeSystem.REFLECTIVE_BOUNCES
+        assert reflective.bounces_remaining == KNIFE_REFLECTIVE_BOUNCES
         assert world.get_component(entity, TimeAffected).scale == 1.0
         assert world.get_component(entity, Delayed) is None
 

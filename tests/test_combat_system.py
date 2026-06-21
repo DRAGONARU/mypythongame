@@ -1,9 +1,9 @@
 from src.systems.combat_system import CombatSystem
-from src.core.components import Knife, Health, Owner, Enemy, Player, DamageCooldown
+from src.core.components import Knife, Health, Owner, Enemy, Player, DamageCooldown, Projectile
 from src.core.events import CollisionEvent
 from src.core.ecs.entity import Entity
 from src.core.ecs.world import World
-from config.config_params import ENEMY_CONTACT_DAMAGE, ENEMY_HIT_COOLDOWN
+from config.config_params import ENEMY_CONTACT_DAMAGE, ENEMY_HIT_COOLDOWN, BOSS_PROJECTILE_DAMAGE
 import pytest
 
 
@@ -306,3 +306,50 @@ def test_cooldown_expires_then_damage_again(system, world):
     world.events.append(CollisionEvent(enemy, player, world.tick))
     system.update(world)
     assert world.get_component(player, Health).value == 100 - 2 * ENEMY_CONTACT_DAMAGE
+
+
+# --- projectile damage ---
+
+
+def _add_projectile(world, damage=BOSS_PROJECTILE_DAMAGE):
+    e = world.create_entity()
+    world.add_component(e, Projectile(damage=damage))
+    return e
+
+
+def test_projectile_damages_player(system, world):
+    """A boss projectile deals its damage to the player on collision."""
+    proj = _add_projectile(world)
+    player = _add_player(world, hp=100)
+
+    world.events.append(CollisionEvent(proj, player, world.tick))
+    system.update(world)
+
+    assert world.get_component(player, Health).value == 100 - BOSS_PROJECTILE_DAMAGE
+
+
+def test_projectile_destroyed_on_hit(system, world):
+    """A projectile is consumed when it hits the player."""
+    proj = _add_projectile(world)
+    player = _add_player(world, hp=100)
+
+    world.events.append(CollisionEvent(proj, player, world.tick))
+    system.update(world)
+
+    assert not world._is_alive(proj)
+    assert world._is_alive(player)
+
+
+def test_projectile_respects_damage_cooldown(system, world):
+    """A second projectile during cooldown deals no damage."""
+    proj1 = _add_projectile(world)
+    proj2 = _add_projectile(world)
+    player = _add_player(world, hp=100)
+
+    world.events.append(CollisionEvent(proj1, player, world.tick))
+    system.update(world)
+    assert world.get_component(player, Health).value == 100 - BOSS_PROJECTILE_DAMAGE
+
+    world.events.append(CollisionEvent(proj2, player, world.tick))
+    system.update(world)
+    assert world.get_component(player, Health).value == 100 - BOSS_PROJECTILE_DAMAGE

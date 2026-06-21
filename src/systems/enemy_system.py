@@ -1,5 +1,5 @@
 from src.core.ecs.system import System
-from src.core.components import Position, Velocity, Enemy, Health, Player
+from src.core.components import Position, Velocity, Enemy, Health, Player, Boss
 from config.config_params import ENEMY_SPEED
 
 class EnemySystem(System):
@@ -23,6 +23,8 @@ class EnemySystem(System):
             return
 
         for enemy_entity, enemy, pos in world.query(Enemy, Position):
+            if world.get_component(enemy_entity, Boss) is not None:
+                continue
             dx = player_pos.x - pos.x
             dy = player_pos.y - pos.y
             dist = (dx * dx + dy * dy) ** 0.5 or 1.0

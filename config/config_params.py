@@ -47,24 +47,70 @@ SPAWN_RING_RADIUS: float = 200.0
 
 WAVE_SPAWN_COUNT: int = 5
 WAVE_SPAWN_COOLDOWN: int = 120
-WAVE_MAX_ENEMIES: int = 100
+WAVE_MAX_ENEMIES: int = 50
 
 
 # --- Knife ---
 
 KNIFE_SPEED: float = 300.0 / TICK_RATE
 KNIFE_DAMAGE: int = 25
-KNIFE_LIFETIME: int = 1024
+KNIFE_LIFETIME: int = 512
 KNIFE_RADIUS: float = 4.0
-KNIFE_DELAYED_TICKS: int = 512
-KNIFE_REFLECTIVE_BOUNCES: int = 3
+KNIFE_DELAYED_TICKS: int = 256
+KNIFE_REFLECTIVE_BOUNCES: int = 2
 KNIFE_SPAWN_COOLDOWN: int = 6
+
+
+# --- Spell cards ---
+
+SPELL_KNIVES_COUNT: int = 12
+SPELL_KNIVES_COST: int = 30
+SPELL_TELEPORT_COST: int = 50
+SPELL_COOLDOWN: int = 60
+
+
+# --- Progression ---
+
+XP_ORB_VALUE: int = 10
+XP_ORB_RADIUS: float = 5.0
+XP_PICKUP_RADIUS: float = 35.0
+XP_GROWTH: float = 1.5
+XP_ORB_COLOR: tuple[int, int, int] = (140, 220, 140)
+
+UPGRADE_HP: int = 10
+UPGRADE_MANA: int = 10
+UPGRADE_TIMEMANA: int = 10
+UPGRADE_BOUNCES: int = 1
+UPGRADE_KNIVES: int = 2
+
+# --- Boss ---
+
+BOSS_HP: int = 1500
+BOSS_RADIUS: float = 30.0
+BOSS_SPEED: float = 40.0 / TICK_RATE
+BOSS_PROJECTILE_SPEED: float = 200.0 / TICK_RATE
+BOSS_PROJECTILE_DAMAGE: int = 15
+BOSS_PROJECTILE_RADIUS: float = 6.0
+BOSS_PROJECTILE_LIFETIME: int = 300
+BOSS_FIRE_COOLDOWN: int = 60
+BOSS_SPREAD_DEGREES: float = 20.0
+BOSS_COLOR: tuple[int, int, int] = (180, 0, 180)
+PROJECTILE_COLOR: tuple[int, int, int] = (255, 100, 255)
+BOSS_MUSIC_PATH: str = "assets/baka.mp3"
+SPRITE_BOSS: tuple[str, int, int, int, int] = ("enemy", 0, 1740, 65, 65)
+AMOUNT_OF_BOSSES: int = 4
+
+# --- XP / wave bars ---
+
+XP_BAR_COLOR: tuple[int, int, int] = (120, 220, 120)
+WAVE_BAR_COLOR: tuple[int, int, int] = (220, 180, 60)
+BAR_THICKNESS: int = 8
 
 
 # --- Spatial hashing ---
 
-COLLISION_CELL_SIZE: float = 20.0
-SEPARATION_CELL_SIZE: float = 20.0
+COLLISION_CELL_SIZE: float = 10.0
+SEPARATION_CELL_SIZE: float = 10.0
 
 
 # --- Rendering / Window ---
@@ -101,7 +147,6 @@ BG_TILE_PATH: str = "assets/bg_tile.png"
 USE_MUSIC: bool = True
 MUSIC_PATH: str = "assets/music.mp3"
 MUSIC_VOLUME: float = 0.5
-
 # --- Time ---
 
 NORMAL = "normal"

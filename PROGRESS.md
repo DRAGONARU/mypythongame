@@ -1,6 +1,6 @@
 # PROGRESS — Прогресс проекта
 
-## Последняя проверка: 2026-06-21
+## Последняя проверка: 2026-06-22
 
 ---
 
@@ -11,9 +11,9 @@
 | `pyproject.toml` | ✅ Готов | Имя, зависимости, pytest-конфиг, build-system |
 | Структура папок `src/` | ✅ Создана | core, entities, systems, rendering, input, audio, ui, utils, world |
 | `__init__.py` во всех пакетах | ✅ Готов | Все 9 пакетов + core/ecs |
-| `tests/` | ✅ 382 теста | entity(8), sparse_set(22), world(35), query(20), system(10), game_loop(11), spatial_hash(29), movement(7), player_movement(13), input(5), collision(11), lifetime(8), combat(22), game(13), knife(30), enemy(16), separation(13), snapshots(24), event_log(28), rewind(18), time_system(24) — все проходят |
+| `tests/` | ✅ 447 тестов | entity(8), sparse_set(22), world(35), query(20), system(10), game_loop(11), spatial_hash(29), movement(7), player_movement(13), input(5), collision(11), lifetime(8), combat(25), game(13), knife(30), enemy(16), separation(13), snapshots(24), event_log(28), rewind(18), time_system(24), wave_spawner(9), spell_card(14), progression(18), boss(21) — все проходят |
 | `assets/` | ⚠️ Пустая | Нет ассетов |
-| `config/` | ⚠️ Пустая | Нет конфигов |
+| `config/` | ✅ Готов | `config_params.py` — все константы (tick, rewind, player, enemy, knife, spatial, rendering, HUD, sprites, bg, audio, spell, progression, boss) |
 | egg-info мусор | ✅ Игнорируется | `*.egg-info/` в .gitignore |
 
 ---
@@ -76,15 +76,18 @@
 | Enemy | ✅ | enemy_type, ai_state |
 | CollisionFilter | ✅ | layer, mask |
 | InputState | ✅ | mouse_x, mouse_y, mouse_pressed, keys_pressed |
-| KnifeLoadout | ✅ | current, available, cooldown |
-| Boss | ❌ | phase |
+| KnifeLoadout | ✅ | current, available, cooldown, reflective_bounces |
+| SpellLoadout | ✅ | current, available, cooldown, knives_count |
+| Boss | ✅ | fire_cooldown |
 | Sprite | ❌ | texture_id, layer |
 | Animation | ❌ | current_frame, frame_timer |
 | TimelineAnchor | ❌ | timeline_id |
 | Frozen | ❌ | remaining_ticks |
 | SpellCard | ❌ | spell_type, remaining_ticks, cooldown |
 | TimeBubble | ❌ | center_x, center_y, radius, scale, falloff |
-| Projectile | ❌ | damage, owner_id |
+| Projectile | ✅ | damage |
+| XPOrb | ✅ | value |
+| DamageCooldown | ✅ | remaining_ticks |
 
 ---
 
@@ -104,11 +107,13 @@
 | KnifeBounceSystem | ✅ Готов | в составе knife-тестов (отражение после Collision+Combat) |
 | EnemySystem | ✅ Готов | 16 тестов (преследование, смерть, in-place velocity) |
 | RewindSystem | ✅ Готов | 18 тестов (undo тика, drain TimeMana, stop-условия, return bool) |
-| Renderer | ✅ Готов | спрайты (sheet/rect), HUD-полоски, HP-бары, тайловый фон (без автотестов) |
+| Renderer | ✅ Готов | спрайты (sheet/rect), HUD-полоски, HP-бары, тайловый фон, XP-орбы, XP-бар (низ), wave-бар (верх) (без автотестов) |
 | SpriteSheet | ✅ Готов | листы с разными размерами ячеек + get_rect |
-| WaveSpawner | ❌ | — |
-| ProgressionSystem | ❌ | — |
-| SpellCardSystem | ❌ | — |
+| PlayerGainSystem | ✅ Готов | пассивный реген HP/Mana/TimeMana, масштабируется TimeSystem (без автотестов) |
+| WaveSpawner | ✅ Готов | 9 тестов (пульсный спавн по краям, кулдаун, лимит, all_spawned) |
+| SpellCardSystem | ✅ Готов | 14 тестов (knives кольцо + teleport, правый клик, Z-смена, мана, кулдаун) |
+| ProgressionSystem | ✅ Готов | 18 тестов (XP-орбы, подбор, level-up, 5 апгрейдов) |
+| BossSystem | ✅ Готов | 21 тест (спавн последним, движение, веер ±20°, независимый кулдаун, смерть) |
 
 ---
 
@@ -116,16 +121,18 @@
 
 | Элемент | Статус | Примечание |
 |---------|--------|------------|
-| `Game.__init__` | ✅ Готов | World + 10 систем + GameLoop + Renderer + EventLog + SnapshotBuffer + TimeSystem + музыка |
-| `_tick(dt)` | ✅ Готов | Rewind-gate: input → если rewind то undo+drain; иначе begin_tick→capture_fields→time_system→системы→snapshot_buffer.capture + _check_player_death |
+| `Game.__init__` | ✅ Готов | World + 15 систем + GameLoop + Renderer + EventLog + SnapshotBuffer + TimeSystem + WaveSpawner + BossSystem + музыка |
+| `_tick(dt)` | ✅ Готов | Rewind-gate: input → если rewind то undo+drain; иначе begin_tick→capture_fields→time_system→системы→snapshot_buffer.capture + _check_player_death + _check_victory |
 | `_rewind()` | ✅ Готов | InputSystem всегда; R+TimeMana → RewindSystem.start/update (возвращает bool); иначе stop |
-| `_render(alpha)` | ✅ Готов | Делегирует в Renderer.render(world, alpha) |
+| `_render(alpha)` | ✅ Готов | Делегирует в Renderer.render(world, alpha, wave_progress) |
+| `_wave_progress()` | ✅ Готов | killed = total_spawned - alive, ratio = killed / max_enemies |
 | `_check_quit` | ✅ Готов | ESC/Q → loop.stop (вызывается и в rewind-ветке) |
 | `_check_player_death` | ✅ Готов | HP ≤ 0 → loop.stop |
+| `_check_victory` | ✅ Готов | all_spawned AND boss_spawned AND нет живых врагов → victory=True, loop.stop |
 | `_start_music` | ✅ Готов | pygame.mixer зацикленный трек, try/except fallback |
 | `run()` / `stop()` | ✅ Готов | Делегирует в GameLoop |
-| Порядок систем | ✅ | Input → TimeSystem → PlayerMovement → Knife → Enemy → Movement → Separation → Collision → Combat → KnifeBounce → Lifetime |
-| `main.py` | ✅ Готов | pygame.init → Game → ArenaSetup.setup → run → quit |
+| Порядок систем | ✅ | Input → PlayerMovement → Knife → SpellCard → Progression → Enemy → Boss → Movement → Separation → Collision → Combat → KnifeBounce → Lifetime → PlayerGain → WaveSpawner |
+| `main.py` | ✅ Готов | pygame.init → Game → ArenaSetup.setup(enemy_count=0) → run → quit |
 
 ---
 
@@ -147,24 +154,25 @@
 |-----------|--------|
 | Knife System (3 типа MVP + 4 доп.) | ✅ 3 типа MVP: Normal, Delayed, Reflective |
 | Knife Bounce (отдельная система) | ✅ Готов (после Collision+Combat) |
-| Spell Cards (event-driven, мана) | ❌ 2 карты: knives-around + teleport-to-cursor |
+| Spell Cards (event-driven, мана) | ✅ Готов (SpellCardSystem: knives-around + teleport, правый клик, Z-смена) |
 | Способности времени (мана времени) | ✅ Готов (TimeSystem: Space=Stop, E=Slow) |
-| Enemy System | ✅ Готов (преследование + смерть) |
+| Enemy System | ✅ Готов (преследование + смерть, босс пропускается) |
 | Enemy contact damage | ✅ Готов (DamageCooldown, враг→игрок, смерть игрока) |
 | SeparationSystem (анти-стак) | ✅ Готов (отталкивание врагов) |
 | Collision System | ✅ Готов | broad+narrow + CollisionFilter (битовые слои) + CollisionEvent |
 | Player (Сакуя: HP + Mana + TimeMana + Experience) | ✅ Готов (спавн в ArenaSetup) |
 | Player Movement (WASD) | ✅ Готов |
 | Ввод / Управление | ✅ Готов | InputSystem: mouse + keyboard → InputState компонент |
-| Рендеринг | ✅ Готов | Renderer: спрайты (sheet+rect), HP-бары врагов, HUD-полоски, тайловый фон |
-| Спрайты объектов | ✅ Готов | SpriteSheet (много листов, разные размеры ячеек, поворот ножей) |
-| UI (HUD: HP/Mana/TimeMana) | ✅ Готов | три полоски в верхнем левом углу |
-| Музыка / звук | ✅ Готов | фоновый трек (pygame.mixer, зацикленный, fallback) |
-| Спавн арены | ✅ Готов | `src/world_setup.py` ArenaSetup.setup |
+| Рендеринг | ✅ Готов | Renderer: спрайты (sheet+rect), HP-бары врагов, HUD-полоски, тайловый фон, XP-орбы, XP-бар (низ), wave-бар (верх) |
+| Спрайты объектов | ✅ Готов | SpriteSheet (много листов, разные размеры ячеек, поворот ножей, спрайт босса) |
+| UI (HUD: HP/Mana/TimeMana) | ✅ Готов | три полоски в верхнем левом углу + XP-бар внизу + wave-бар вверху |
+| Музыка / звук | ✅ Готов | фоновый трек (pygame.mixer, зацикленный, fallback) + смена трека при спавне босса |
+| Спавн арены | ✅ Готов | `src/world_setup.py` ArenaSetup.setup (только игрок, враги — WaveSpawner) |
 | Точка входа | ✅ Готов | `main.py` |
-| WaveSpawner (бесконечный спавн) | ❌ настраиваемый в config |
-| Roguelike прогрессия (опыт, уровни, драфт) | ❌ XP-капли + draft 1-of-3 |
-| Босс (1 шт.) | ❌ финал MVP |
+| WaveSpawner (бесконечный спавн) | ✅ Готов (пульсный спавн по краям, кулдаун + лимит в config, all_spawned) |
+| PlayerGainSystem (реген) | ✅ Готов (пассивный реген HP/Mana/TimeMana, масштаб TimeSystem) |
+| Roguelike прогрессия (опыт, уровни) | ✅ Готов (XP-орбы, подбор по радиусу, level-up → случайный апгрейд из 5) |
+| Босс | ✅ Готов (спавнится последним, движение к игроку, веер ±20°, независимый кулдаун, смена музыки) |
 
 ## Фаза 4 — Продвинутые механики
 
@@ -209,6 +217,8 @@
 27. **Враги не атаковали игрока** (CombatSystem обрабатывал только ножи) — ✅ исправлено (контактный урон + DamageCooldown)
 28. **Delayed ножи летели как обычные** (TimeSystem перетирал scale=0 на 1.0) — ✅ исправлено (delayed-safe в `_apply_multiplier`)
 29. **`No module named 'src'`** при запуске не из корня — ✅ исправлено (pyproject `where=["."]`, `src/__init__.py`, editable reinstall)
+30. **Multiple bosses firing only one** (`_find_boss_pos` возвращал первого босса через `return` в цикле) — ✅ исправлено (итерация по всем боссам, независимый `fire_cooldown` в компоненте `Boss`)
+31. **Spell card Z-cycle every tick** (edge-detection отсутствует, Z удерживается → циклит 120/сек) — ⚠️ консистентно с остальным кодом (single-press edge-detection — отдельная задача)
 
 ---
 
@@ -255,8 +265,10 @@
 39. ~~Тайловый фон~~ ✅ (кешированный `_bg`, fallback на fill)
 40. ~~Музыка~~ ✅ (pygame.mixer зацикленный трек, fallback)
 41. ~~Пакетная установка (No module named 'src')~~ ✅ (pyproject + editable reinstall)
-42. Реализовать **WaveSpawner** (бесконечный спавн волн, параметры в config)
-43. Реализовать **2 Spell Cards** (мана): knives-around-self + teleport-to-cursor
-44. Реализовать **ProgressionSystem**: враги дропают XP+мана, level-up → draft 1-of-3 апгрейдов
-45. Реализовать **1 босса** (фаза боя, спец-атаки) — финал MVP
-46. **MVP для показа готов** 🎯
+42. ~~Реализовать **WaveSpawner**~~ ✅ (9 тестов, пульсный спавн по краям)
+43. ~~Реализовать **PlayerGainSystem**~~ ✅ (реген, масштаб TimeSystem)
+44. ~~Реализовать **2 Spell Cards**~~ ✅ (14 тестов, knives-around + teleport)
+45. ~~Реализовать **ProgressionSystem**~~ ✅ (18 тестов, XP-орбы + level-up + 5 апгрейдов)
+46. ~~Реализовать **босса**~~ ✅ (21 тест, спавн последним, движение, веер ±20°, смена музыки)
+47. ~~**ALGORITHMS.md**~~ ✅ (18 алгоритмов с описанием и сложностью)
+48. **MVP для показа готов** 🎯

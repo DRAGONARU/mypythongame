@@ -15,7 +15,6 @@ class KnifeSystem(System):
     KNIFE_LIFETIME = KNIFE_LIFETIME
     KNIFE_RADIUS = KNIFE_RADIUS
     DELAYED_TICKS = KNIFE_DELAYED_TICKS
-    REFLECTIVE_BOUNCES = KNIFE_REFLECTIVE_BOUNCES
     SPAWN_COOLDOWN = KNIFE_SPAWN_COOLDOWN
 
     def update(self, world) -> None:
@@ -50,10 +49,10 @@ class KnifeSystem(System):
                 loadout.cooldown -= 1
                 continue
             if input_state.mouse_pressed[0]:
-                self._spawn_knife(world, entity, pos, loadout.current, input_state)
+                self._spawn_knife(world, entity, pos, loadout.current, loadout, input_state)
                 loadout.cooldown = self.SPAWN_COOLDOWN
 
-    def _spawn_knife(self, world, owner, owner_pos, knife_type, input_state) -> None:
+    def _spawn_knife(self, world, owner, owner_pos, knife_type, loadout, input_state) -> None:
         """Spawns a knife at the player's position."""
         knife = world.create_entity()
 
@@ -79,7 +78,7 @@ class KnifeSystem(System):
             time_aff.scale = 0.0
             world.add_component(knife, Delayed(activate_ticks=self.DELAYED_TICKS))
         elif knife_type == "reflective":
-            world.add_component(knife, Reflective(bounces_remaining=self.REFLECTIVE_BOUNCES))
+            world.add_component(knife, Reflective(bounces_remaining=loadout.reflective_bounces))
 
     def _activate_delayed(self, world) -> None:
         """Handles delayed knife activation."""

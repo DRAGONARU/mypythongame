@@ -1,7 +1,7 @@
 import math
 import pygame
 from src.core.ecs.world import World
-from src.core.components import Position, Collider, Velocity, Player, Enemy, Knife, Health, Mana, TimeMana
+from src.core.components import Position, Collider, Velocity, Player, Enemy, Knife, Health, Mana, TimeMana, XPOrb, Experience, Boss, Projectile
 from config.config_params import (
     SCREEN_SIZE, WINDOW_TITLE,
     BG_COLOR, PLAYER_COLOR, ENEMY_COLOR, KNIFE_COLOR,
@@ -11,6 +11,13 @@ from config.config_params import (
     HUD_HP_COLOR, HUD_MANA_COLOR, HUD_TIMEMANA_COLOR,
     HUD_BG_COLOR, HUD_BORDER_COLOR,
     USE_BG_TILE, BG_TILE_PATH,
+    XP_ORB_COLOR, XP_BAR_COLOR, WAVE_BAR_COLOR, BAR_THICKNESS,
+    BOSS_COLOR, PROJECTILE_COLOR, XP_ORB_RADIUS,
+)
+from src.rendering.sprite_sheet import SpriteSheet
+from config.config_params import (
+    USE_SPRITES, SPRITE_SHEETS,
+    SPRITE_PLAYER, SPRITE_ENEMY, SPRITE_KNIFE, SPRITE_BOSS,
 )
 from src.rendering.sprite_sheet import SpriteSheet
 from config.config_params import (
@@ -33,6 +40,8 @@ class Renderer:
     PLAYER_COLOR: tuple[int, int, int] = PLAYER_COLOR
     ENEMY_COLOR: tuple[int, int, int] = ENEMY_COLOR
     KNIFE_COLOR: tuple[int, int, int] = KNIFE_COLOR
+    BOSS_COLOR: tuple[int, int, int] = BOSS_COLOR
+    PROJECTILE_COLOR: tuple[int, int, int] = PROJECTILE_COLOR
     HEALTH_BAR_BG: tuple[int, int, int] = HEALTH_BAR_BG
     HEALTH_BAR_FG: tuple[int, int, int] = HEALTH_BAR_FG
 
@@ -79,6 +88,7 @@ class Renderer:
             ("player", SPRITE_PLAYER),
             ("enemy", SPRITE_ENEMY),
             ("knife", SPRITE_KNIFE),
+            ("boss", SPRITE_BOSS),
         ):
             sheet = sheets.get(sheet_name)
             if sheet is None:
@@ -89,19 +99,25 @@ class Renderer:
                 continue
         return sprites
 
-    def render(self, world: World, alpha: float) -> None:
+    def render(self, world: World, alpha: float, wave_progress: float = 0.0) -> None:
         """Draw all visible entities to the screen.
 
         Args:
             world: World to read entity data from.
             alpha: Interpolation factor [0, 1) between logic ticks.
                 Ignored for MVP (positions drawn as-is).
+            wave_progress: Fraction of the wave cleared [0, 1].
         """
         self.screen.blit(self._bg, (0, 0))
+        self._draw_xp_orbs(world)
         self._draw_enemies(world)
+        self._draw_boss(world)
+        self._draw_projectiles(world)
         self._draw_player(world)
         self._draw_knives(world)
         self._draw_hud(world)
+        self._draw_xp_bar(world)
+        self._draw_wave_bar(wave_progress)
         pygame.display.flip()
 
     def _draw_player(self, world: World) -> None:
@@ -119,6 +135,8 @@ class Renderer:
         """Draw enemies as sprites (or red circles) with health bars."""
         sprite = self._sprites.get("enemy")
         for entity, enemy, pos, col, health in world.query(Enemy, Position, Collider, Health):
+            if world.get_component(entity, Boss) is not None:
+                continue
             if sprite is not None:
                 rect = sprite.get_rect(center=(int(pos.x), int(pos.y)))
                 self.screen.blit(sprite, rect)
@@ -151,6 +169,24 @@ class Renderer:
         pygame.draw.rect(self.screen, self.HEALTH_BAR_FG,
                          (bx, by, int(bar_w * ratio), bar_h))
 
+    def _draw_boss(self, world: World) -> None:
+        """Draw the boss as a large sprite (or magenta circle) with a health bar."""
+        sprite = self._sprites.get("boss")
+        for entity, boss, pos, col, health in world.query(Boss, Position, Collider, Health):
+            if sprite is not None:
+                rect = sprite.get_rect(center=(int(pos.x), int(pos.y)))
+                self.screen.blit(sprite, rect)
+            else:
+                pygame.draw.circle(self.screen, self.BOSS_COLOR,
+                                   (int(pos.x), int(pos.y)), int(col.radius))
+            self._draw_health_bar(pos, col, health)
+
+    def _draw_projectiles(self, world: World) -> None:
+        """Draw boss projectiles as small magenta circles."""
+        for entity, proj, pos, col in world.query(Projectile, Position, Collider):
+            pygame.draw.circle(self.screen, self.PROJECTILE_COLOR,
+                               (int(pos.x), int(pos.y)), max(2, int(col.radius)))
+
     def _draw_hud(self, world: World) -> None:
         """Draw the player's HP/Mana/TimeMana bars in the top-left corner."""
         hp = mana = tm = None
@@ -182,3 +218,36 @@ class Renderer:
             pygame.draw.rect(self.screen, color, (x, y, fill_w, HUD_BAR_HEIGHT))
         pygame.draw.rect(self.screen, HUD_BORDER_COLOR,
                          (x, y, HUD_BAR_WIDTH, HUD_BAR_HEIGHT), 1)
+
+    def _draw_xp_orbs(self, world: World) -> None:
+        """Draw XP orbs as small green circles."""
+        for entity, orb, pos in world.query(XPOrb, Position):
+            pygame.draw.circle(self.screen, XP_ORB_COLOR,
+                               (int(pos.x), int(pos.y)), int(XP_ORB_RADIUS))
+
+    def _draw_xp_bar(self, world: World) -> None:
+        """Draw the player's XP bar across the bottom of the screen."""
+        xp = None
+        for entity, player, experience in world.query(Player, Experience):
+            xp = experience
+            break
+        if xp is None:
+            return
+        w = self.screen_size[0]
+        y = self.screen_size[1] - BAR_THICKNESS
+        ratio = max(0.0, min(1.0, xp.current / xp.to_next)) if xp.to_next > 0 else 0.0
+        pygame.draw.rect(self.screen, HUD_BG_COLOR, (0, y, w, BAR_THICKNESS))
+        fill_w = int(w * ratio)
+        if fill_w > 0:
+            pygame.draw.rect(self.screen, XP_BAR_COLOR, (0, y, fill_w, BAR_THICKNESS))
+        pygame.draw.rect(self.screen, HUD_BORDER_COLOR, (0, y, w, BAR_THICKNESS), 1)
+
+    def _draw_wave_bar(self, progress: float) -> None:
+        """Draw the wave-clear progress bar across the top of the screen."""
+        w = self.screen_size[0]
+        ratio = max(0.0, min(1.0, progress))
+        pygame.draw.rect(self.screen, HUD_BG_COLOR, (0, 0, w, BAR_THICKNESS))
+        fill_w = int(w * ratio)
+        if fill_w > 0:
+            pygame.draw.rect(self.screen, WAVE_BAR_COLOR, (0, 0, fill_w, BAR_THICKNESS))
+        pygame.draw.rect(self.screen, HUD_BORDER_COLOR, (0, 0, w, BAR_THICKNESS), 1)

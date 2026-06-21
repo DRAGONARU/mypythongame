@@ -124,11 +124,9 @@ Rewind не удаляет старую timeline. Каждая entity имеет
 
 ---
 
-## Дорожная карта до MVP для показа (актуальная, 2026-06-21)
+## Дорожная карта до MVP для показа (актуальная, 2026-06-22)
 
-Фундамент (ECS, game loop, spatial hash), базовый геймплей, Rewind, TimeSystem,
-спрайты, HUD, музыка — готовы. 382 теста.
-Оставшиеся задачи по приоритету для закрытия MVP:
+Все основные системы реализованы. 447 тестов. MVP готов.
 
 1. ~~**TimeSystem**~~ ✅ (Space=Time Stop, E=Slow, drain TimeMana, delayed-safe)
 2. ~~**Спрайты**~~ ✅ (SpriteSheet: много листов, разные размеры ячеек, поворот ножей)
@@ -136,21 +134,13 @@ Rewind не удаляет старую timeline. Каждая entity имеет
 4. ~~**Тайловый фон**~~ ✅ (кешированный `_bg`, fallback на fill)
 5. ~~**Музыка**~~ ✅ (pygame.mixer зацикленный трек, fallback)
 6. ~~**Враги атакуют игрока**~~ ✅ (контактный урон + DamageCooldown, смерть игрока)
-7. **WaveSpawner** (`src/systems/spawner_system.py`)
-   - Бесконечный спавн волн по краям экрана, рост сложности со временем
-   - Параметры в `config/config_params.py` (интервал, размер пачки, типы)
-8. **2 Spell Cards** (мана) — `src/systems/spell_card_system.py`
-   - "Knives Around": спавн кольца ножей вокруг игрока
-   - "Teleport": мгновенный перенос игрока на курсор
-   - Клавиши Q/E (или иные), трата Mana, кулдаун
-9. **ProgressionSystem** (`src/systems/progression_system.py`)
-   - Враги при смерти дропают XP + мана (pickup или мгновенно)
-   - Level-up при `current >= to_next` → пауза + draft 1-of-3
-   - Upgrade registry: +урон ножа, +скорость атаки, +max HP, +скорость движения и т.д.
-10. **1 Босс** (`src/systems/boss_system.py` / компонент Boss)
-    - Фазы боя, спец-атаки (спавн проджектайлов, призыв миньонов)
-    - Спавн по таймеру/уровню — финал MVP-забега
-8. **MVP для показа готов** 🎯
+7. ~~**WaveSpawner**~~ ✅ (пульсный спавн по краям экрана, кулдаун + лимит в config)
+8. ~~**PlayerGainSystem**~~ ✅ (пассивный реген HP/Mana/TimeMana, масштабируется TimeSystem)
+9. ~~**2 Spell Cards**~~ ✅ (knives-around кольцо + teleport-to-cursor, правый клик, Z — смена, мана)
+10. ~~**ProgressionSystem**~~ ✅ (XP-орбы с врагов, подбор по радиусу, level-up → случайный апгрейд)
+11. ~~**1 Босс**~~ ✅ (спавнится последним, преследует игрока, веерная стрельба ±20°, смена музыки)
+12. ~~**ALGORITHMS.md**~~ ✅ (документация всех 18 алгоритмов со сложностью)
+13. **MVP для показа готов** 🎯
 
 ---
 
@@ -203,15 +193,18 @@ Sparse set даёт: cache locality, O(1) add/remove.
 | Player | (пустой маркер) | Маркер игрока | ✅ |
 | Experience | level, current, to_next | Текущий опыт, уровень, опыт до следующего уровня | ✅ |
 | Enemy | enemy_type, ai_state | Тип врага, состояние ИИ | ✅ |
-| Boss | phase | Фаза босса | ❌ |
+| Boss | fire_cooldown | Маркер босса + независимый кулдаун стрельбы | ✅ |
 | SpellCard | spell_type, remaining_ticks, cooldown | Тип спелла, оставшееся время, кд | ❌ |
 | TimeBubble | center_x, center_y, radius, scale, falloff | Параметры временного пузыря | ❌ |
-| Projectile | damage, owner_id | Универсальный проджектайл (вражеский) | ❌ |
+| Projectile | damage | Снаряд босса, наносит урон игроку | ✅ |
+| XPOrb | value | Сфера опыта, выпадает с врагов | ✅ |
 | Sprite | texture_id, layer | Что рисовать, слой отрисовки | ❌ |
 | Animation | current_frame, frame_timer | Текущий кадр анимации | ❌ |
 | CollisionFilter | layer, mask | Битовые слои коллизий | ✅ |
 | InputState | mouse_x, mouse_y, mouse_pressed, keys_pressed | Состояние ввода (компонент) | ✅ |
-| KnifeLoadout | current, available, cooldown | Выбор типа ножа игроком | ✅ |
+| KnifeLoadout | current, available, cooldown, reflective_bounces | Выбор типа ножа игроком | ✅ |
+| SpellLoadout | current, available, cooldown, knives_count | Выбор спелл-карты игроком | ✅ |
+| DamageCooldown | remaining_ticks | Кулдаун получения контактного урона | ✅ |
 
 ### Архетипы (сущности игры)
 

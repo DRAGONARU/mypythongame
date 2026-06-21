@@ -11,3 +11,6 @@ from .rewind_system import RewindSystem
 from .time_system import TimeSystem
 from .player_gain_system import PlayerGainSystem
 from .wave_spawner_system import WaveSpawner
+from .spell_card_system import SpellCardSystem
+from .progression_system import ProgressionSystem
+from .boss_system import BossSystem

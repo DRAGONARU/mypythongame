@@ -118,3 +118,27 @@ class KnifeLoadout:
     current: str = "normal"
     available: tuple[str, ...] = ("normal", "delayed", "reflective")
     cooldown: int = 0
+    reflective_bounces: int = 3
+
+@dataclass(slots=True)
+class SpellLoadout:
+    """Currently selected spell card and available cards."""
+    current: str = "knives"
+    available: tuple[str, ...] = ("knives", "teleport")
+    cooldown: int = 0
+    knives_count: int = 16
+
+@dataclass(slots=True)
+class XPOrb:
+    """Experience orb dropped by dead enemies, collected on proximity."""
+    value: int
+
+@dataclass(slots=True)
+class Boss:
+    """Boss marker component with an independent fire cooldown."""
+    fire_cooldown: int = 0
+
+@dataclass(slots=True)
+class Projectile:
+    """Boss projectile that deals damage on hit."""
+    damage: int

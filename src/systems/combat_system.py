@@ -1,5 +1,5 @@
 from src.core.ecs.system import System
-from src.core.components import Knife, Health, Owner, Reflective, Enemy, Player, DamageCooldown
+from src.core.components import Knife, Health, Owner, Reflective, Enemy, Player, DamageCooldown, Projectile
 from config.config_params import ENEMY_CONTACT_DAMAGE, ENEMY_HIT_COOLDOWN
 
 
@@ -42,6 +42,17 @@ class CombatSystem(System):
         if knife is not None:
             health.value -= knife.damage
             if world.get_component(attacker, Reflective) is None:
+                world.destroy_entity(attacker)
+            return
+
+        projectile = world.get_component(attacker, Projectile)
+        if projectile is not None:
+            if world.get_component(defender, Player) is not None:
+                cd = world.get_component(defender, DamageCooldown)
+                if cd is not None:
+                    return
+                health.value -= projectile.damage
+                world.add_component(defender, DamageCooldown(remaining_ticks=ENEMY_HIT_COOLDOWN))
                 world.destroy_entity(attacker)
             return
 

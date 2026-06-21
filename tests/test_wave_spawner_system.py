@@ -31,13 +31,15 @@ def test_first_pulse_spawns_immediately(world):
 def test_cooldown_delays_next_pulse(world):
     """Pulses only fire once the cooldown has elapsed."""
     spawner = _make_spawner(count=2, cooldown=3, max_enemies=10)
-    spawner.update(world)
+    spawner.update(world)  # fire -> total 2, cooldown_ticks=3
     assert spawner.total_spawned == 2
-    spawner.update(world)
+    spawner.update(world)  # 3 -> 2
     assert spawner.total_spawned == 2
-    spawner.update(world)
+    spawner.update(world)  # 2 -> 1
     assert spawner.total_spawned == 2
-    spawner.update(world)
+    spawner.update(world)  # 1 -> 0
+    assert spawner.total_spawned == 2
+    spawner.update(world)  # fire -> total 4
     assert spawner.total_spawned == 4
 
 
@@ -56,9 +58,11 @@ def test_spawn_capped_at_max(world):
 def test_pulse_respects_remaining_budget(world):
     """The last pulse only spawns the remaining count, not a full pulse."""
     spawner = _make_spawner(count=5, cooldown=1, max_enemies=12)
-    spawner.update(world)  # 5
-    spawner.update(world)  # 10
-    spawner.update(world)  # would be 15, capped to 12
+    spawner.update(world)  # 5, cooldown_ticks=1
+    spawner.update(world)  # idle
+    spawner.update(world)  # 10, cooldown_ticks=1
+    spawner.update(world)  # idle
+    spawner.update(world)  # capped to 12
     assert spawner.total_spawned == 12
 
 

@@ -3,12 +3,13 @@ import math
 from src.core.ecs.world import World
 from src.core.components import (
     Position, Velocity, Collider, Health, Mana, TimeMana, Experience,
-    TimeAffected, Player, Enemy, KnifeLoadout, CollisionFilter,
-    LAYER_PLAYER, LAYER_ENEMY, LAYER_KNIFE,
+    TimeAffected, Player, Enemy, KnifeLoadout, SpellLoadout, CollisionFilter,
+    LAYER_PLAYER, LAYER_ENEMY, LAYER_KNIFE, LAYER_PROJECTILE,
 )
 from config.config_params import (
     PLAYER_RADIUS, PLAYER_HP, PLAYER_MANA, PLAYER_TIME_MANA, PLAYER_XP_TO_NEXT,
     ENEMY_RADIUS, ENEMY_HP, SPAWN_RING_RADIUS,
+    KNIFE_REFLECTIVE_BOUNCES, SPELL_KNIVES_COUNT,
 )
 
 class ArenaSetup:
@@ -48,8 +49,9 @@ class ArenaSetup:
         world.add_component(player, Experience(level=1, current=0, to_next=ArenaSetup.PLAYER_XP_TO_NEXT))
         world.add_component(player, TimeAffected(scale=1.0))
         world.add_component(player, Player())
-        world.add_component(player, CollisionFilter(layer=LAYER_PLAYER, mask=LAYER_ENEMY))
-        world.add_component(player, KnifeLoadout(current="normal", available=("normal", "delayed", "reflective"), cooldown=0))
+        world.add_component(player, CollisionFilter(layer=LAYER_PLAYER, mask=LAYER_ENEMY | LAYER_PROJECTILE))
+        world.add_component(player, KnifeLoadout(current="normal", available=("normal", "delayed", "reflective"), cooldown=0, reflective_bounces=KNIFE_REFLECTIVE_BOUNCES))
+        world.add_component(player, SpellLoadout(current="knives", available=("knives", "teleport"), cooldown=0, knives_count=SPELL_KNIVES_COUNT))
 
     @staticmethod
     def _spawn_enemies(world: World, count: int, center: tuple[float, float]) -> None:
