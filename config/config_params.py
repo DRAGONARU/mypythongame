@@ -8,7 +8,7 @@ values instead of hardcoding their own.
 
 # --- Tick simulation ---
 
-TICK_RATE: int = 120
+TICK_RATE: int = 60
 FIXED_DT: float = 1.0 / TICK_RATE
 MAX_TICKS_PER_FRAME: int = 5
 
@@ -37,7 +37,7 @@ ENEMY_SPEED: float = 100.0 / TICK_RATE
 ENEMY_RADIUS: float = 10.0
 ENEMY_HP: int = 50
 SPAWN_RING_RADIUS: float = 200.0
-ARENA_ENEMY_COUNT: int = 10
+ARENA_ENEMY_COUNT: int = 120
 
 
 # --- Knife ---
@@ -70,3 +70,14 @@ ENEMY_COLOR: tuple[int, int, int] = (220, 60, 60)
 KNIFE_COLOR: tuple[int, int, int] = (240, 240, 240)
 HEALTH_BAR_BG: tuple[int, int, int] = (60, 0, 0)
 HEALTH_BAR_FG: tuple[int, int, int] = (0, 200, 0)
+
+# --- Time ---
+
+NORMAL = "normal"
+SLOW = "slow"
+TIME_STOP = "stop"
+REWIND = "rewind"
+
+SLOW_SCALE: float = 0.3
+TIME_STOP_DRAIN: int = 2
+SLOW_DRAIN: int = 1

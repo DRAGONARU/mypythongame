@@ -1,5 +1,5 @@
 from src.core.ecs.world import World
-from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem, KnifeSystem, KnifeBounceSystem, EnemySystem, PlayerMovementSystem, SeparationSystem, RewindSystem
+from src.systems import MovementSystem, InputSystem, LifetimeSystem, CollisionSystem, CombatSystem, KnifeSystem, KnifeBounceSystem, EnemySystem, PlayerMovementSystem, SeparationSystem, RewindSystem, TimeSystem
 from src.core.game_loop import GameLoop
 from src.rendering.render import Renderer
 from src.core.event_log import EventLog
@@ -32,6 +32,7 @@ class Game:
         self.event_log = EventLog(capacity_ticks=REWIND_CAPACITY_TICKS)
         self.snapshot_buffer = SnapshotBuffer(capacity=SNAPSHOT_CAPACITY)
         self.world.event_log = self.event_log
+        self.time_system = TimeSystem()
 
     def _tick(self, dt: float) -> None:
         if self._rewind():
@@ -40,6 +41,7 @@ class Game:
         self.world.tick += 1
         self.event_log.begin_tick(self.world.tick)
         self.event_log.capture_fields(self.world)
+        self.time_system.update(self.world)
         for system in self.systems:
             system.update(self.world)
         self.world.events.clear()

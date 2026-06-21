@@ -8,3 +8,4 @@ from .knife_system import KnifeSystem, KnifeBounceSystem
 from .enemy_system import EnemySystem
 from .separation_system import SeparationSystem
 from .rewind_system import RewindSystem
+from .time_system import TimeSystem
