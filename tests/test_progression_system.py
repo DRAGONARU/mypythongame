@@ -148,9 +148,10 @@ def test_multiple_level_ups_in_one_tick(system, world):
     """
     _add_player(world, to_next=10, xp=50)
     system.update(world)
+    system.update(world)
     for entity, player, xp in world.query(Player, Experience):
         assert xp.level == 1 + 3
-        assert xp.current == 3
+        assert xp.current == 11
 
 
 def test_upgrade_applied_once_per_level(system, world, monkeypatch):

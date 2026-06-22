@@ -55,10 +55,6 @@ class EventLog:
             old_tick = self._tick_order.pop(0)
             self._events.pop(old_tick, None)
 
-    # Resource pools that represent a cost, not rewound state.
-    # Excluding them from capture means undo leaves them untouched,
-    # so drains from RewindSystem/TimeSystem accumulate correctly
-    # instead of being reverted to their pre-tick value each undo.
     _NON_REWOUND_TYPES = (TimeMana, Mana)
 
     def capture_fields(self, world: World) -> None:

@@ -8,7 +8,7 @@ values instead of hardcoding their own.
 
 # --- Tick simulation ---
 
-TICK_RATE: int = 60
+TICK_RATE: int = 120
 FIXED_DT: float = 1.0 / TICK_RATE
 MAX_TICKS_PER_FRAME: int = 5
 
@@ -17,7 +17,7 @@ MAX_TICKS_PER_FRAME: int = 5
 
 REWIND_CAPACITY_TICKS: int = 240
 SNAPSHOT_CAPACITY: int = 240
-REWIND_DRAIN_PER_TICK: int = 2
+REWIND_DRAIN_PER_TICK: int = 3
 REWIND_MAX_TICKS: int = 240
 
 
@@ -27,12 +27,12 @@ PLAYER_SPEED: float = 250.0 / TICK_RATE
 PLAYER_RADIUS: float = 12.0
 PLAYER_HP: int = 100
 PLAYER_MANA: int = 100
-PLAYER_TIME_MANA: int = 250
+PLAYER_TIME_MANA: int = 500
 PLAYER_XP_TO_NEXT: int = 100
-PLAYER_HP_REGEN: int = 1
-PLAYER_MANA_REGEN: int = 1
-PLAYER_TIME_MANA_REGEN: int = 18
-COOLDOWN_TICKS = 15
+PLAYER_HP_REGEN: int = 2
+PLAYER_MANA_REGEN: int = 2
+PLAYER_TIME_MANA_REGEN: int = 50
+COOLDOWN_TICKS = 10
 
 # --- Enemy ---
 
@@ -45,43 +45,43 @@ SPAWN_RING_RADIUS: float = 200.0
 
 # --- Wave spawner ---
 
-WAVE_SPAWN_COUNT: int = 15
+WAVE_SPAWN_COUNT: int = 5
 WAVE_SPAWN_COOLDOWN: int = 120
-WAVE_MAX_ENEMIES: int = 350
+WAVE_MAX_ENEMIES: int = 50
 
 
 # --- Knife ---
 
 KNIFE_SPEED: float = 300.0 / TICK_RATE
 KNIFE_DAMAGE: int = 25
-KNIFE_LIFETIME: int = 300
+KNIFE_LIFETIME: int = 512
 KNIFE_RADIUS: float = 4.0
-KNIFE_DELAYED_TICKS: int = 140
+KNIFE_DELAYED_TICKS: int = 256
 KNIFE_REFLECTIVE_BOUNCES: int = 2
 KNIFE_SPAWN_COOLDOWN: int = 6
 
 
 # --- Spell cards ---
 
-SPELL_KNIVES_COUNT: int = 14
-SPELL_KNIVES_COST: int = 20
-SPELL_TELEPORT_COST: int = 40
-SPELL_COOLDOWN: int = 40
+SPELL_KNIVES_COUNT: int = 12
+SPELL_KNIVES_COST: int = 30
+SPELL_TELEPORT_COST: int = 50
+SPELL_COOLDOWN: int = 60
 
 
 # --- Progression ---
 
-XP_ORB_VALUE: int = 15
+XP_ORB_VALUE: int = 10
 XP_ORB_RADIUS: float = 5.0
-XP_PICKUP_RADIUS: float = 45.0
-XP_GROWTH: float = 1.3
-XP_ORB_COLOR: tuple[int, int, int] = (252, 127, 3)
+XP_PICKUP_RADIUS: float = 35.0
+XP_GROWTH: float = 1.5
+XP_ORB_COLOR: tuple[int, int, int] = (140, 220, 140)
 
-UPGRADE_HP: int = 20
-UPGRADE_MANA: int = 20
-UPGRADE_TIMEMANA: int = 50
+UPGRADE_HP: int = 10
+UPGRADE_MANA: int = 10
+UPGRADE_TIMEMANA: int = 10
 UPGRADE_BOUNCES: int = 1
-UPGRADE_KNIVES: int = 3
+UPGRADE_KNIVES: int = 2
 
 # --- Boss ---
 
@@ -91,14 +91,14 @@ BOSS_SPEED: float = 40.0 / TICK_RATE
 BOSS_PROJECTILE_SPEED: float = 200.0 / TICK_RATE
 BOSS_PROJECTILE_DAMAGE: int = 15
 BOSS_PROJECTILE_RADIUS: float = 6.0
-BOSS_PROJECTILE_LIFETIME: int = 210
-BOSS_FIRE_COOLDOWN: int = 10
+BOSS_PROJECTILE_LIFETIME: int = 300
+BOSS_FIRE_COOLDOWN: int = 60
 BOSS_SPREAD_DEGREES: float = 20.0
 BOSS_COLOR: tuple[int, int, int] = (180, 0, 180)
-PROJECTILE_COLOR: tuple[int, int, int] = (10, 10, 10)
+PROJECTILE_COLOR: tuple[int, int, int] = (255, 100, 255)
 BOSS_MUSIC_PATH: str = "assets/baka.mp3"
 SPRITE_BOSS: tuple[str, int, int, int, int] = ("enemy", 0, 1740, 65, 65)
-AMOUNT_OF_BOSSES: int = 2
+AMOUNT_OF_BOSSES: int = 4
 
 # --- XP / wave bars ---
 
